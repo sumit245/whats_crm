@@ -1,0 +1,396 @@
+/* =====================================================================
+   MPWA Dashboard — shared design layer
+   Loaded after the theme stylesheets in layout-dashboard.blade.php.
+   Goal: one consistent look for cards, tables, forms, badges, buttons,
+   page headers and chrome across every dashboard page, while staying
+   compatible with the semi-dark / light / dark theme switcher.
+   ===================================================================== */
+
+:root {
+    --mpwa-brand: #128c7e;
+    --mpwa-brand-rgb: 18, 140, 126;
+    --mpwa-accent: #25d366;
+    --mpwa-radius: 0.75rem;
+    --mpwa-radius-sm: 0.5rem;
+    --mpwa-gutter: 1.5rem;
+    --mpwa-card-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+    --mpwa-card-shadow-hover: 0 4px 12px rgba(16, 24, 40, 0.10);
+    --mpwa-border: rgba(0, 0, 0, 0.075);
+}
+
+/* ------------------------------------------------------------------ */
+/* 1. Layout normalization                                            */
+/* The newer feature pages were wrapped in markup borrowed from a      */
+/* different admin template (.app-content / .content-wrapper) and used */
+/* a mix of .container (centered) and .container-fluid (full width).   */
+/* Neutralize them so every page renders at a single consistent width. */
+/* ------------------------------------------------------------------ */
+.page-content {
+    padding: var(--mpwa-gutter);
+}
+
+.page-content .app-content,
+.page-content .content-wrapper {
+    display: block;
+    padding: 0;
+    margin: 0;
+    width: auto;
+}
+
+/* Force a single, full-width content container regardless of which
+   Bootstrap container class a given page happens to use. */
+.page-content .container,
+.page-content .container-fluid,
+.dashboard-container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media (max-width: 575.98px) {
+    .page-content {
+        padding: 1rem;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Page header (x-page-header component)                            */
+/* ------------------------------------------------------------------ */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: var(--mpwa-gutter);
+}
+
+.page-header__titles {
+    min-width: 0;
+}
+
+.page-header__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.page-header__subtitle {
+    margin: 0.15rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.page-header__actions {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-header .breadcrumb {
+    margin: 0.35rem 0 0;
+    padding: 0;
+    font-size: 0.8rem;
+    background: transparent;
+}
+
+.page-header .breadcrumb-item + .breadcrumb-item::before {
+    content: "\F285"; /* bi-chevron-right */
+    font-family: "bootstrap-icons";
+    font-size: 0.7rem;
+    opacity: 0.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. Cards                                                            */
+/* ------------------------------------------------------------------ */
+.page-content .card {
+    border: 1px solid var(--mpwa-border);
+    border-radius: var(--mpwa-radius);
+    box-shadow: var(--mpwa-card-shadow);
+    margin-bottom: var(--mpwa-gutter);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.page-content .card:last-child {
+    margin-bottom: 0;
+}
+
+/* Cards laid out inside a Bootstrap grid column rely on the row gutter
+   (g-*) for spacing, so cancel the default stacking margin and let them
+   fill the column height. */
+.page-content [class*="col"] > .card,
+.page-content .card.h-100 {
+    margin-bottom: 0;
+    height: 100%;
+}
+
+.page-content .card .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--mpwa-border);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+.page-content .card .card-body {
+    padding: 1.25rem;
+}
+
+/* Stat / widget cards on the dashboard + analytics */
+.widget-icon {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--mpwa-radius-sm);
+    font-size: 1.35rem;
+}
+
+.bg-orange {
+    background-color: #fd7e14 !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. Tables                                                          */
+/* ------------------------------------------------------------------ */
+.page-content .table {
+    --bs-table-hover-bg: rgba(var(--mpwa-brand-rgb), 0.04);
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.page-content .table > thead th {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0.75;
+    border-bottom-width: 1px;
+    white-space: nowrap;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+}
+
+.page-content .table > tbody td {
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+}
+
+.page-content .table-responsive {
+    border-radius: var(--mpwa-radius-sm);
+}
+
+/* When a table sits flush inside a card body (.card-body.p-0) */
+.page-content .card-body.p-0 .table > :not(caption) > * > * {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* 5. Forms                                                           */
+/* ------------------------------------------------------------------ */
+.page-content .form-label {
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.page-content .form-control,
+.page-content .form-select {
+    border-radius: var(--mpwa-radius-sm);
+}
+
+.page-content .form-control:focus,
+.page-content .form-select:focus {
+    border-color: var(--mpwa-brand);
+    box-shadow: 0 0 0 0.2rem rgba(var(--mpwa-brand-rgb), 0.15);
+}
+
+.page-content .form-text {
+    font-size: 0.78rem;
+    opacity: 0.7;
+}
+
+/* ------------------------------------------------------------------ */
+/* 6. Buttons + badges                                                */
+/* ------------------------------------------------------------------ */
+.page-content .btn {
+    border-radius: var(--mpwa-radius-sm);
+    font-weight: 500;
+}
+
+.page-content .btn-primary {
+    --bs-btn-bg: var(--mpwa-brand);
+    --bs-btn-border-color: var(--mpwa-brand);
+    --bs-btn-hover-bg: #0f7468;
+    --bs-btn-hover-border-color: #0f7468;
+    --bs-btn-active-bg: #0d655b;
+    --bs-btn-active-border-color: #0d655b;
+    --bs-btn-disabled-bg: var(--mpwa-brand);
+    --bs-btn-disabled-border-color: var(--mpwa-brand);
+}
+
+.page-content .btn-outline-primary {
+    --bs-btn-color: var(--mpwa-brand);
+    --bs-btn-border-color: var(--mpwa-brand);
+    --bs-btn-hover-bg: var(--mpwa-brand);
+    --bs-btn-hover-border-color: var(--mpwa-brand);
+    --bs-btn-active-bg: var(--mpwa-brand);
+    --bs-btn-active-border-color: var(--mpwa-brand);
+}
+
+.page-content .badge {
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding: 0.4em 0.65em;
+}
+
+/* ------------------------------------------------------------------ */
+/* 7. Pagination                                                      */
+/* ------------------------------------------------------------------ */
+.page-content .pagination {
+    margin-bottom: 0;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.page-content .page-link {
+    border-radius: var(--mpwa-radius-sm);
+    border: 1px solid var(--mpwa-border);
+    color: var(--mpwa-brand);
+    min-width: 38px;
+    text-align: center;
+}
+
+.page-content .page-item.active .page-link {
+    background-color: var(--mpwa-brand);
+    border-color: var(--mpwa-brand);
+    color: #fff;
+}
+
+/* ------------------------------------------------------------------ */
+/* 8. Empty state                                                     */
+/* ------------------------------------------------------------------ */
+.mpwa-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    opacity: 0.75;
+}
+
+.mpwa-empty i {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* 9. Sidebar + header chrome polish                                  */
+/* ------------------------------------------------------------------ */
+.sidebar-wrapper .metismenu a {
+    border-radius: var(--mpwa-radius-sm);
+    margin: 1px 8px;
+}
+
+.sidebar-wrapper .metismenu li.active > a,
+.sidebar-wrapper .metismenu li.mm-active > a {
+    background: rgba(var(--mpwa-brand-rgb), 0.12);
+    color: var(--mpwa-brand);
+    font-weight: 600;
+}
+
+.sidebar-wrapper .metismenu li.active > a .parent-icon,
+.sidebar-wrapper .metismenu li.mm-active > a .parent-icon {
+    color: var(--mpwa-brand);
+}
+
+.top-header .searchbar .form-control:focus {
+    border-color: var(--mpwa-brand);
+    box-shadow: none;
+}
+
+/* Floating theme toggle button (defined inline in layout) */
+.float-btn {
+    background-color: var(--mpwa-brand) !important;
+}
+
+/* Footer */
+.footer {
+    padding: 0.85rem var(--mpwa-gutter);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--mpwa-border);
+}
+
+/* WhatsApp-style template preview bubble reused across pages */
+.wa-bubble {
+    background: #dcf8c6;
+    color: #111;
+    border-radius: 8px;
+    padding: 10px 12px;
+    max-width: 280px;
+}
+
+/* Template create wizard — preview / JSON panels */
+.mpwa-preview-panel {
+    min-height: 150px;
+    font-family: sans-serif;
+}
+
+.mpwa-code-panel {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 0;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.mpwa-media-placeholder {
+    background: rgba(0, 0, 0, 0.08);
+    height: 80px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+html.dark-theme .mpwa-code-panel,
+html.semi-dark .mpwa-code-panel {
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+}
+
+html.dark-theme .mpwa-preview-panel,
+html.semi-dark .mpwa-preview-panel {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+html.dark-theme .mpwa-media-placeholder,
+html.semi-dark .mpwa-media-placeholder {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* SmartWizard step nav — readable on dark / semi-dark themes */
+html.dark-theme #smartwizard .nav .nav-link,
+html.semi-dark #smartwizard .nav .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+html.dark-theme #smartwizard .nav .nav-link.active,
+html.semi-dark #smartwizard .nav .nav-link.active {
+    color: #fff;
+}
+
+html.dark-theme #smartwizard .nav .nav-link h6,
+html.semi-dark #smartwizard #smartwizard .nav .nav-link h6 {
+    color: inherit;
+}
+
+#variableHints .input-group-text {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+}
