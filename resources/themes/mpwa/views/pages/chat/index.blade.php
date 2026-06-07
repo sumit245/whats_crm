@@ -6,7 +6,7 @@
 .wachat-sidebar        { width:300px; min-width:260px; flex-shrink:0; border-right:1px solid var(--dnd-border); display:flex; flex-direction:column; }
 .wachat-main           { flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
 .wachat-crm            { width:300px; min-width:260px; flex-shrink:0; border-left:1px solid var(--dnd-border); display:flex; flex-direction:column; font-size:13px; overflow-y:auto; }
-.wachat-sidebar-header  { padding:10px 12px; border-bottom:1px solid var(--dnd-border); }
+.wachat-sidebar-header  { padding:10px 12px; border-bottom:1px solid var(--dnd-border); min-height:90px; box-sizing:border-box; }
 .wachat-conv-list       { flex:1; overflow-y:auto; }
 .wachat-conv-item       { display:flex; align-items:center; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--dnd-border); transition:background .15s; }
 .wachat-conv-avatar     { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; color:#fff; }
@@ -17,7 +17,7 @@
 .unread-badge, .sla-badge { border-radius:50%; font-size:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 3px; margin-top:3px; color:#fff; }
 .sla-badge              { background:var(--dnd-accent-danger); }
 .wachat-sidebar-footer  { padding:10px; border-top:1px solid var(--dnd-border); }
-.wachat-main-header     { padding:10px 14px; border-bottom:1px solid var(--dnd-border); display:flex; align-items:center; min-height:56px; color:var(--dnd-text); gap:10px; }
+.wachat-main-header     { padding:10px 14px; border-bottom:1px solid var(--dnd-border); display:flex; align-items:center; min-height:90px; box-sizing:border-box; color:var(--dnd-text); gap:10px; }
 .wachat-messages-area   { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:5px; }
 .wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--dnd-text-muted); background:var(--dnd-bg); }
 .wachat-input-area      { padding:8px 12px; border-top:1px solid var(--dnd-border); display:flex; align-items:flex-end; gap:8px; background:var(--dnd-surface); }
@@ -36,6 +36,7 @@
 .date-divider           { text-align:center; font-size:12px; color:var(--dnd-text-muted); margin:8px 0; }
 .date-divider span      { background:var(--dnd-brand-muted); color:var(--dnd-brand); padding:3px 10px; border-radius:var(--dnd-radius-pill); }
 .crm-section            { padding:12px; border-bottom:1px solid var(--dnd-border); }
+.wachat-crm > .crm-section:first-child { min-height:90px; box-sizing:border-box; }
 .crm-section h6         { font-size:12px; font-weight:700; text-transform:uppercase; color:var(--dnd-text-muted); margin-bottom:8px; letter-spacing:.5px; }
 .attr-key               { font-size:12px; color:var(--dnd-text-muted); width:90px; flex-shrink:0; }
 .attr-val               { font-size:12px; font-weight:600; flex:1; cursor:pointer; padding:2px 4px; border-radius:var(--dnd-radius); color:var(--dnd-text); }
@@ -109,7 +110,7 @@
                 @forelse ($conversations as $conv)
                     <div class="wachat-conv-item {{ (isset($conversation) && $conversation->id === $conv->id) ? 'active' : '' }}"
                          data-conv-id="{{ $conv->id }}"
-                         onclick="window.location='{{ route('chat.show', $conv->id) }}'">
+                         onclick="window.location='{{ route('chat.show', $conv->id) }}?conv_status={{ $conv->conversation_status }}'">
                         <div class="wachat-conv-avatar" style="{{ $conv->sla_breached ? 'background:#dc3545' : '' }}">
                             {{ $conv->avatar_letter }}
                         </div>

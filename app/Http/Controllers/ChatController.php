@@ -92,7 +92,7 @@ class ChatController extends Controller
 
         $devices      = $request->user()->devices()->where('status', 'Connected')->get();
         $deviceId     = $request->device_id ?? session('selectedDevice.device_id');
-        $statusFilter = $request->conv_status ?? 'open';
+        $statusFilter = $request->conv_status ?? $conversation->conversation_status;
         $agentFilter  = $request->agent_id;
         $teamFilter   = $request->team_id;
 
