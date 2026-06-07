@@ -23,15 +23,25 @@ class ChatController extends Controller
     {
         $devices = $request->user()->devices()->where('status', 'Connected')->get();
 
-        $deviceId    = $request->device_id ?? session('selectedDevice.device_id');
-        $agentFilter = $request->agent_id;
-        $statusFilter= $request->conv_status ?? 'open';
+        $deviceId     = $request->device_id ?? session('selectedDevice.device_id');
+        $agentFilter  = $request->agent_id;
+        $teamFilter   = $request->team_id;
+        $statusFilter = $request->conv_status ?? 'open';
+
+        // Supervisor mode: show all agents' conversations when an agent/team filter is active
+        // or the user explicitly requests global view
+        $isSupervisor = $request->boolean('global') ||
+            Agent::where('user_id', $request->user()->id)
+                ->whereIn('role', ['supervisor', 'admin'])
+                ->exists();
 
         $conversations = $request->user()->conversations()
             ->when($deviceId,     fn ($q) => $q->where('device_id', $deviceId))
             ->when($agentFilter,  fn ($q) => $q->where('assigned_agent_id', $agentFilter))
+            ->when($teamFilter,   fn ($q) => $q->whereHas('assignedAgent', fn ($aq) => $aq->where('team_id', $teamFilter)))
             ->when($statusFilter, fn ($q) => $q->where('conversation_status', $statusFilter))
             ->when($request->sla_only, fn ($q) => $q->where('sla_breached', true))
+            ->when($request->unassigned_only, fn ($q) => $q->whereNull('assigned_agent_id'))
             ->when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
                 $q->where('contact_name', 'like', '%' . $request->search . '%')
                   ->orWhere('contact_number', 'like', '%' . $request->search . '%');
@@ -44,7 +54,10 @@ class ChatController extends Controller
         $agents = Agent::where('user_id', $request->user()->id)->with('team')->get();
         $teams  = \App\Models\Team::where('user_id', $request->user()->id)->get();
 
-        return view('theme::pages.chat.index', compact('conversations', 'devices', 'deviceId', 'agents', 'teams', 'statusFilter'));
+        return view('theme::pages.chat.index', compact(
+            'conversations', 'devices', 'deviceId', 'agents', 'teams',
+            'statusFilter', 'isSupervisor'
+        ));
     }
 
     public function show(Request $request, $id)
@@ -61,13 +74,41 @@ class ChatController extends Controller
             ->limit(100)
             ->get();
 
-        $devices = $request->user()->devices()->where('status', 'Connected')->get();
+        // Merge messages and notes into a single chronological timeline
+        $timeline = $messages->map(fn ($m) => (object)[
+                'type'       => 'message',
+                'item'       => $m,
+                'created_at' => $m->created_at,
+            ])
+            ->concat(
+                $conversation->notes->map(fn ($n) => (object)[
+                    'type'       => 'note',
+                    'item'       => $n,
+                    'created_at' => $n->created_at,
+                ])
+            )
+            ->sortBy('created_at')
+            ->values();
 
+        $devices      = $request->user()->devices()->where('status', 'Connected')->get();
+        $deviceId     = $request->device_id ?? session('selectedDevice.device_id');
         $statusFilter = $request->conv_status ?? 'open';
+        $agentFilter  = $request->agent_id;
+        $teamFilter   = $request->team_id;
 
+        $isSupervisor = $request->boolean('global') ||
+            Agent::where('user_id', $request->user()->id)
+                ->whereIn('role', ['supervisor', 'admin'])
+                ->exists();
+
+        // Sidebar conversation list — apply same filters as index() so supervisor controls work
         $conversations = $request->user()->conversations()
-            ->when(session('selectedDevice.device_id'), fn ($q) => $q->where('device_id', session('selectedDevice.device_id')))
-            ->when($statusFilter, fn ($q) => $q->where('conversation_status', $statusFilter))
+            ->when($deviceId,              fn ($q) => $q->where('device_id', $deviceId))
+            ->when($agentFilter,           fn ($q) => $q->where('assigned_agent_id', $agentFilter))
+            ->when($teamFilter,            fn ($q) => $q->whereHas('assignedAgent', fn ($aq) => $aq->where('team_id', $teamFilter)))
+            ->when($statusFilter,          fn ($q) => $q->where('conversation_status', $statusFilter))
+            ->when($request->sla_only,     fn ($q) => $q->where('sla_breached', true))
+            ->when($request->unassigned_only, fn ($q) => $q->whereNull('assigned_agent_id'))
             ->with(['device', 'assignedAgent'])
             ->orderByDesc('sla_breached')
             ->orderByDesc('last_message_at')
@@ -79,10 +120,10 @@ class ChatController extends Controller
             ->where('status', 'APPROVED')
             ->get(['id', 'name', 'category', 'language', 'components']);
 
-        $agents     = Agent::where('user_id', $request->user()->id)->with('team')->get();
-        $teams      = \App\Models\Team::where('user_id', $request->user()->id)->get();
+        $agents = Agent::where('user_id', $request->user()->id)->with('team')->get();
+        $teams  = \App\Models\Team::where('user_id', $request->user()->id)->get();
 
-        // CRM: contact attributes and tags for right panel
+        // CRM right panel: custom attributes and phonebook tags
         $contactAttributes = ContactAttribute::allFor(
             $request->user()->id,
             $conversation->contact_number
@@ -97,9 +138,9 @@ class ChatController extends Controller
             ->values();
 
         return view('theme::pages.chat.index', compact(
-            'conversation', 'messages', 'conversations', 'devices',
-            'approvedTemplates', 'agents', 'teams', 'statusFilter',
-            'contactAttributes', 'contactTags'
+            'conversation', 'messages', 'timeline', 'conversations', 'devices',
+            'deviceId', 'approvedTemplates', 'agents', 'teams',
+            'statusFilter', 'isSupervisor', 'contactAttributes', 'contactTags'
         ));
     }
 
@@ -139,7 +180,20 @@ class ChatController extends Controller
 
         $service    = new MetaCloudApiService($device);
         $fakeReq    = (object) ['message' => $request->message, 'text' => $request->message];
-        $result     = $service->sendText($fakeReq, $conversation->contact_number);
+
+        Log::debug('Chat send attempt', [
+            'conv_id' => $conversation->id,
+            'to'      => $conversation->contact_number,
+            'device'  => $device->id,
+        ]);
+
+        $result = $service->sendText($fakeReq, $conversation->contact_number);
+
+        Log::debug('Chat send result', [
+            'status'     => $result->status,
+            'message_id' => $result->message_id ?? null,
+            'error'      => $result->error ?? null,
+        ]);
 
         $status = $result->status ? 'sent' : 'failed';
 
@@ -410,6 +464,12 @@ class ChatController extends Controller
 
         $conversation->update(['assigned_agent_id' => null, 'assignment_source' => null]);
 
+        SocketPushService::pushToInbox($conversation->user_id, 'inbox_update', [
+            'conversation_id'    => $conversation->id,
+            'event'              => 'unassigned',
+            'assigned_agent_id'  => null,
+        ]);
+
         return response()->json(['ok' => true]);
     }
 
@@ -433,7 +493,56 @@ class ChatController extends Controller
             'event'           => 'resolved',
         ]);
 
+        // Push to inbox room so the sidebar updates status without page refresh
+        SocketPushService::pushToInbox($conversation->user_id, 'inbox_update', [
+            'conversation_id'     => $conversation->id,
+            'event'               => 'resolved',
+            'conversation_status' => 'resolved',
+        ]);
+
+        // CSAT: send rating template if one is configured for this account
+        $this->sendCsatTemplate($conversation);
+
         return response()->json(['ok' => true]);
+    }
+
+    private function sendCsatTemplate(\App\Models\Conversation $conversation): void
+    {
+        try {
+            // Look for an approved template whose name starts with 'csat' or 'rating'
+            $csatTemplate = \App\Models\WabaTemplate::where('user_id', $conversation->user_id)
+                ->where('device_id', $conversation->device_id)
+                ->where('status', 'APPROVED')
+                ->where(function ($q) {
+                    $q->where('name', 'like', 'csat%')
+                      ->orWhere('name', 'like', 'rating%')
+                      ->orWhere('name', 'like', 'feedback%');
+                })
+                ->first();
+
+            if (!$csatTemplate || !$conversation->device) {
+                return;
+            }
+
+            $service = new MetaCloudApiService($conversation->device);
+            $result  = $service->sendBlastTemplate(
+                new \App\Models\Blast(['receiver' => $conversation->contact_number, 'template_variables' => []]),
+                ['name' => $csatTemplate->name, 'language' => $csatTemplate->language]
+            );
+
+            if ($result->status) {
+                ChatMessage::create([
+                    'conversation_id' => $conversation->id,
+                    'direction'       => 'outbound',
+                    'type'            => 'template',
+                    'body'            => "[CSAT: {$csatTemplate->name}]",
+                    'meta_message_id' => $result->message_id ?? null,
+                    'status'          => 'sent',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::debug('CSAT template send skipped: ' . $e->getMessage());
+        }
     }
 
     private function formatMessage(ChatMessage $m): array

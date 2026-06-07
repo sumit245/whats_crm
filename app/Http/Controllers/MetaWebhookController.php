@@ -98,6 +98,17 @@ class MetaWebhookController extends Controller
                             'created_at'      => now()->toISOString(),
                         ]);
 
+                        // Push inbox sidebar update so agents see new/updated conversations without refresh
+                        SocketPushService::pushToInbox($conversation->user_id, 'inbox_update', [
+                            'conversation_id'  => $conversation->id,
+                            'contact_name'     => $conversation->contact_name ?? $conversation->contact_number,
+                            'contact_number'   => $conversation->contact_number,
+                            'last_message'     => $this->extractText($message),
+                            'last_message_at'  => now()->toISOString(),
+                            'unread_count'     => $conversation->unread_count,
+                            'assigned_agent_id'=> $conversation->assigned_agent_id,
+                        ]);
+
                         // Feature 3: Auto-route new conversations to an available agent
                         if (!$conversation->assigned_agent_id) {
                             try {
@@ -243,6 +254,15 @@ class MetaWebhookController extends Controller
             $newRank     = self::STATUS_RANK[$statusValue] ?? -1;
             if ($statusValue === 'failed' || $newRank > $currentRank) {
                 $chatMsg->update(['status' => $statusValue]);
+                if ($statusValue === 'failed') {
+                    Log::warning('Chat message delivery failed', [
+                        'chat_message_id' => $chatMsg->id,
+                        'conversation_id' => $chatMsg->conversation_id,
+                        'meta_message_id' => $metaMessageId,
+                        'error_code'      => $errorCode ?: null,
+                        'error_title'     => $status['errors'][0]['title'] ?? null,
+                    ]);
+                }
             }
         }
     }

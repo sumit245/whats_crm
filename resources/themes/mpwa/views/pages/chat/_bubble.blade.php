@@ -18,11 +18,15 @@
         <div class="bubble-time">
             {{ $msg->created_at->format('H:i') }}
             @if ($msg->direction === 'outbound')
-                @php
-                    $tickCls = match($msg->status) { 'read' => 'read', 'delivered' => 'delivered', default => 'sent' };
-                    $tick    = $msg->status === 'sent' ? '✓' : '✓✓';
-                @endphp
-                <span class="status-tick {{ $tickCls }}">{{ $tick }}</span>
+                @if ($msg->status === 'failed')
+                    <span class="status-tick" style="color:#dc3545" title="{{ __('Delivery failed — contact may be outside 24h window. Use a template.') }}">✕</span>
+                @else
+                    @php
+                        $tickCls = match($msg->status) { 'read' => 'read', 'delivered' => 'delivered', default => '' };
+                        $tick    = $msg->status === 'sent' ? '✓' : '✓✓';
+                    @endphp
+                    <span class="status-tick {{ $tickCls }}">{{ $tick }}</span>
+                @endif
             @endif
         </div>
     </div>

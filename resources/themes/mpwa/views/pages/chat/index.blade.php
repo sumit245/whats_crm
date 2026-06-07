@@ -1,86 +1,54 @@
 <x-layout-dashboard title="{{ __('Chat') }}">
 
 <style>
-/* ─────────────────────────────────────────────────────────────
-   Multi-agent chat widget — Feature 3
-   Colors are pinned (!important) so bubbles render correctly
-   under all theme modes.
-   ───────────────────────────────────────────────────────────── */
-.wachat-wrapper        { display:flex; height:calc(100vh - 190px); min-height:480px; overflow:hidden; border:1px solid #e0e0e0; border-radius:8px; background:#fff !important; color:#111 !important; }
-.wachat-sidebar        { width:300px; min-width:260px; flex-shrink:0; border-right:1px solid #e0e0e0; display:flex; flex-direction:column; background:#fff !important; }
-.wachat-main           { flex:1 1 0; min-width:0; display:flex; flex-direction:column; background:#fff !important; }
-.wachat-crm            { width:300px; min-width:260px; flex-shrink:0; border-left:1px solid #e0e0e0; display:flex; flex-direction:column; background:#fafafa !important; font-size:13px; overflow-y:auto; }
-
-/* Sidebar */
-.wachat-sidebar-header  { padding:10px 12px; border-bottom:1px solid #e0e0e0; }
-.wachat-sidebar .form-select,
-.wachat-sidebar .form-control { background:#fff !important; color:#111 !important; border:1px solid #dfe3e8 !important; }
+/* Chat layout — colors via dnd-pages.css + tokens */
+.wachat-wrapper        { display:flex; overflow:hidden; }
+.wachat-sidebar        { width:300px; min-width:260px; flex-shrink:0; border-right:1px solid var(--dnd-border); display:flex; flex-direction:column; }
+.wachat-main           { flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
+.wachat-crm            { width:300px; min-width:260px; flex-shrink:0; border-left:1px solid var(--dnd-border); display:flex; flex-direction:column; font-size:13px; overflow-y:auto; }
+.wachat-sidebar-header  { padding:10px 12px; border-bottom:1px solid var(--dnd-border); }
 .wachat-conv-list       { flex:1; overflow-y:auto; }
-.wachat-conv-item       { display:flex; align-items:center; padding:9px 12px; cursor:pointer; border-bottom:1px solid #f5f5f5; transition:background .15s; }
-.wachat-conv-item:hover, .wachat-conv-item.active { background:#f0f9ff !important; }
-.wachat-conv-avatar     { width:40px; height:40px; border-radius:50%; background:#25d366; color:#fff !important; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; }
+.wachat-conv-item       { display:flex; align-items:center; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--dnd-border); transition:background .15s; }
+.wachat-conv-avatar     { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; color:#fff; }
 .wachat-conv-meta       { flex:1; min-width:0; padding-left:9px; }
-.wachat-conv-name       { font-weight:600; font-size:13px; color:#111 !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.wachat-conv-preview    { font-size:11px; color:#888 !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.wachat-conv-time       { font-size:11px; color:#aaa !important; white-space:nowrap; margin-left:6px; }
-.unread-badge           { background:#25d366; color:#fff !important; border-radius:50%; font-size:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 3px; margin-top:3px; }
-.sla-badge              { background:#dc3545; color:#fff !important; border-radius:50%; font-size:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 3px; margin-top:3px; }
-.wachat-sidebar-footer  { padding:10px; border-top:1px solid #e0e0e0; }
-
-/* Main panel */
-.wachat-main-header     { padding:10px 14px; border-bottom:1px solid #e0e0e0; display:flex; align-items:center; min-height:56px; color:#111 !important; gap:10px; }
-.wachat-messages-area   { flex:1; overflow-y:auto; padding:14px; background:#e5ddd5 !important; display:flex; flex-direction:column; gap:5px; }
-.wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:#888 !important; background:#f7f7f7 !important; }
-.wachat-input-area      { padding:8px 12px; border-top:1px solid #e0e0e0; display:flex; align-items:flex-end; gap:8px; background:#fff !important; }
-#chatTextarea           { resize:none; border-radius:20px; padding:8px 14px; font-size:14px; flex:1; max-height:120px; color:#111 !important; background:#fff !important; }
-
-/* Typing indicator */
-#typingIndicator        { padding:4px 14px; font-size:12px; color:#667781; min-height:24px; }
-
-/* Bubbles */
+.wachat-conv-name       { font-weight:600; font-size:13px; color:var(--dnd-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wachat-conv-preview    { font-size:11px; color:var(--dnd-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wachat-conv-time       { font-size:11px; color:var(--dnd-text-muted); white-space:nowrap; margin-left:6px; }
+.unread-badge, .sla-badge { border-radius:50%; font-size:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 3px; margin-top:3px; color:#fff; }
+.sla-badge              { background:var(--dnd-accent-danger); }
+.wachat-sidebar-footer  { padding:10px; border-top:1px solid var(--dnd-border); }
+.wachat-main-header     { padding:10px 14px; border-bottom:1px solid var(--dnd-border); display:flex; align-items:center; min-height:56px; color:var(--dnd-text); gap:10px; }
+.wachat-messages-area   { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:5px; }
+.wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--dnd-text-muted); background:var(--dnd-bg); }
+.wachat-input-area      { padding:8px 12px; border-top:1px solid var(--dnd-border); display:flex; align-items:flex-end; gap:8px; background:var(--dnd-surface); }
+#chatTextarea           { resize:none; border-radius:var(--dnd-radius-pill); padding:8px 14px; font-size:14px; flex:1; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); }
+#typingIndicator        { padding:4px 14px; font-size:12px; color:var(--dnd-text-muted); min-height:24px; }
 .bubble-wrap            { display:flex; }
 .bubble-wrap.inbound    { justify-content:flex-start; }
 .bubble-wrap.outbound   { justify-content:flex-end; }
-.bubble                 { max-width:65%; padding:8px 12px; border-radius:8px; font-size:14px; line-height:1.45; position:relative; word-break:break-word; color:#111 !important; box-shadow:0 1px 1px rgba(0,0,0,.08); }
-.bubble.inbound         { background:#fff !important; border-top-left-radius:0; }
-.bubble.outbound        { background:#dcf8c6 !important; border-top-right-radius:0; }
-.bubble.internal-note   { background:#fff3cd !important; border:1px dashed #ffc107 !important; border-radius:8px !important; max-width:80%; }
-.bubble-time            { font-size:11px; color:#667781 !important; text-align:right; margin-top:3px; display:flex; align-items:center; justify-content:flex-end; gap:3px; }
-.bubble-media           { max-width:100%; border-radius:6px; margin-bottom:4px; }
-.status-tick            { font-size:13px; }
-.status-tick.read       { color:#34b7f1 !important; }
-.status-tick.delivered  { color:#888 !important; }
-.status-tick.sent       { color:#aaa !important; }
-.date-divider           { text-align:center; font-size:12px; color:#667781; margin:8px 0; }
-.date-divider span      { background:#d1e7dd; color:#0f5132; padding:3px 10px; border-radius:12px; }
-
-/* CRM panel */
-.crm-section            { padding:12px; border-bottom:1px solid #e9ecef; }
-.crm-section h6         { font-size:12px; font-weight:700; text-transform:uppercase; color:#667781; margin-bottom:8px; letter-spacing:.5px; }
-.attr-row               { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
-.attr-key               { font-size:12px; color:#888; width:90px; flex-shrink:0; }
-.attr-val               { font-size:12px; font-weight:600; flex:1; cursor:pointer; padding:2px 4px; border-radius:4px; }
-.attr-val:hover         { background:#f0f0f0; }
-.note-item              { background:#fffbea; border-left:3px solid #ffc107; padding:6px 8px; border-radius:4px; margin-bottom:6px; font-size:12px; }
-.note-item.not-internal { background:#f0f9ff; border-left-color:#0ea5e9; }
-.note-meta              { font-size:11px; color:#888; margin-top:3px; }
-.sla-timer              { font-size:12px; font-weight:600; }
-.sla-timer.danger       { color:#dc3545; }
-.sla-timer.warning      { color:#f59e0b; }
-.sla-timer.ok           { color:#22c55e; }
-
-/* Status filter tabs */
-.conv-status-tabs       { display:flex; gap:4px; padding:6px 10px; border-bottom:1px solid #e0e0e0; }
-.conv-status-tabs .tab  { font-size:11px; padding:3px 8px; border-radius:12px; cursor:pointer; border:1px solid #e0e0e0; white-space:nowrap; }
-.conv-status-tabs .tab.active { background:#25d366; color:#fff; border-color:#25d366; }
-
-/* Misc */
+.bubble                 { max-width:65%; padding:8px 12px; border-radius:var(--dnd-radius-md); font-size:14px; line-height:1.45; word-break:break-word; color:var(--dnd-text); box-shadow:var(--dnd-shadow-sm); }
+.bubble.inbound         { border-top-left-radius:0; }
+.bubble.outbound        { border-top-right-radius:0; }
+.bubble.internal-note   { background:rgba(245,158,11,.15); border:1px dashed var(--dnd-accent-warning); max-width:80%; }
+.bubble-time            { font-size:11px; color:var(--dnd-text-muted); text-align:right; margin-top:3px; display:flex; align-items:center; justify-content:flex-end; gap:3px; }
+.bubble-media           { max-width:100%; border-radius:var(--dnd-radius); margin-bottom:4px; }
+.status-tick.read       { color:var(--dnd-accent-link); }
+.date-divider           { text-align:center; font-size:12px; color:var(--dnd-text-muted); margin:8px 0; }
+.date-divider span      { background:var(--dnd-brand-muted); color:var(--dnd-brand); padding:3px 10px; border-radius:var(--dnd-radius-pill); }
+.crm-section            { padding:12px; border-bottom:1px solid var(--dnd-border); }
+.crm-section h6         { font-size:12px; font-weight:700; text-transform:uppercase; color:var(--dnd-text-muted); margin-bottom:8px; letter-spacing:.5px; }
+.attr-key               { font-size:12px; color:var(--dnd-text-muted); width:90px; flex-shrink:0; }
+.attr-val               { font-size:12px; font-weight:600; flex:1; cursor:pointer; padding:2px 4px; border-radius:var(--dnd-radius); color:var(--dnd-text); }
+.attr-val:hover         { background:var(--dnd-brand-subtle); }
+.note-item              { background:rgba(245,158,11,.12); border-left:3px solid var(--dnd-accent-warning); padding:6px 8px; border-radius:var(--dnd-radius); margin-bottom:6px; font-size:12px; }
+.note-item.not-internal { background:var(--dnd-brand-muted); border-left-color:var(--dnd-brand); }
+.conv-status-tabs       { display:flex; gap:4px; padding:6px 10px; border-bottom:1px solid var(--dnd-border); }
+.conv-status-tabs .tab  { font-size:11px; padding:3px 8px; border-radius:var(--dnd-radius-pill); cursor:pointer; border:1px solid var(--dnd-border); white-space:nowrap; color:var(--dnd-text-secondary); }
 .btn-xs { padding:2px 7px; font-size:11px; }
-.agent-chip { font-size:11px; background:#e7f3ff; color:#1a73e8; padding:2px 8px; border-radius:10px; display:inline-flex; align-items:center; gap:4px; }
-.internal-mode-bar { background:#fff8dc; border-bottom:1px solid #ffd700; padding:6px 14px; font-size:12px; color:#7a5c00; display:flex; align-items:center; gap:8px; }
+.internal-mode-bar { background:rgba(245,158,11,.12); border-bottom:1px solid var(--dnd-accent-warning); padding:6px 14px; font-size:12px; color:var(--dnd-text); display:flex; align-items:center; gap:8px; }
 </style>
 
-<div class="app-content py-2 px-3">
+<div>
     <div class="wachat-wrapper">
 
         {{-- ── LEFT SIDEBAR ──────────────────────────────── --}}
@@ -97,15 +65,32 @@
                 <div class="d-flex gap-2">
                     <input type="text" id="convSearch" class="form-control form-control-sm flex-grow-1"
                         placeholder="{{ __('Search...') }}">
-                    @if($agents->where('role','supervisor')->count() > 0 || $agents->where('role','admin')->count() > 0)
-                    <select id="agentFilter" class="form-select form-select-sm" style="width:auto">
-                        <option value="">{{ __('All') }}</option>
+                </div>
+                @if($isSupervisor ?? false)
+                <div class="d-flex gap-2 mt-1">
+                    <select id="agentFilter" class="form-select form-select-sm" style="min-width:0;flex:1">
+                        <option value="">{{ __('All Agents') }}</option>
                         @foreach($agents as $a)
-                            <option value="{{ $a->id }}">{{ $a->name }}</option>
+                            <option value="{{ $a->id }}" {{ request('agent_id') == $a->id ? 'selected' : '' }}>
+                                {{ $a->name }}
+                            </option>
                         @endforeach
                     </select>
-                    @endif
+                    <select id="teamFilter" class="form-select form-select-sm" style="min-width:0;flex:1">
+                        <option value="">{{ __('All Teams') }}</option>
+                        @foreach($teams as $t)
+                            <option value="{{ $t->id }}" {{ request('team_id') == $t->id ? 'selected' : '' }}>
+                                {{ $t->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button class="btn btn-xs btn-outline-secondary flex-shrink-0"
+                        onclick="filterUnassigned()"
+                        title="{{ __('Unassigned only') }}">
+                        <i class="bi bi-person-x"></i>
+                    </button>
                 </div>
+                @endif
             </div>
 
             {{-- Status tabs --}}
@@ -123,6 +108,7 @@
             <div class="wachat-conv-list" id="convList">
                 @forelse ($conversations as $conv)
                     <div class="wachat-conv-item {{ (isset($conversation) && $conversation->id === $conv->id) ? 'active' : '' }}"
+                         data-conv-id="{{ $conv->id }}"
                          onclick="window.location='{{ route('chat.show', $conv->id) }}'">
                         <div class="wachat-conv-avatar" style="{{ $conv->sla_breached ? 'background:#dc3545' : '' }}">
                             {{ $conv->avatar_letter }}
@@ -154,7 +140,7 @@
             </div>
 
             <div class="wachat-sidebar-footer">
-                <button class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                <button class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#newChatModal">
                     <i class="bi bi-plus-circle me-1"></i> {{ __('New Chat') }}
                 </button>
             </div>
@@ -224,6 +210,14 @@
                         </div>
                         @endif
 
+                        {{-- Supervisor: Take Over (reassign to yourself) --}}
+                        @if(($isSupervisor ?? false) && $conversation->assignedAgent)
+                        <button class="btn btn-sm btn-outline-danger" onclick="takeOverConversation()"
+                            title="{{ __('Take over this conversation from the current agent') }}">
+                            <i class="bi bi-person-fill-exclamation"></i> {{ __('Take Over') }}
+                        </button>
+                        @endif
+
                         {{-- Resolve --}}
                         @if($conversation->conversation_status !== 'resolved')
                         <button class="btn btn-sm btn-outline-success" onclick="resolveConversation()"
@@ -288,30 +282,31 @@
                 {{-- Typing indicator --}}
                 <div id="typingIndicator"></div>
 
-                {{-- Messages --}}
+                {{-- Messages + notes in chronological order --}}
                 <div class="wachat-messages-area" id="messagesArea">
                     @php $lastDate = null; @endphp
-                    @foreach ($messages as $msg)
-                        @php $msgDate = $msg->created_at->toDateString(); @endphp
-                        @if ($msgDate !== $lastDate)
-                            <div class="date-divider"><span>{{ $msg->created_at->isToday() ? __('Today') : $msg->created_at->format('d M Y') }}</span></div>
-                            @php $lastDate = $msgDate; @endphp
+                    @foreach (isset($timeline) ? $timeline : [] as $entry)
+                        @php $entryDate = $entry->created_at->toDateString(); @endphp
+                        @if ($entryDate !== $lastDate)
+                            <div class="date-divider"><span>{{ $entry->created_at->isToday() ? __('Today') : $entry->created_at->format('d M Y') }}</span></div>
+                            @php $lastDate = $entryDate; @endphp
                         @endif
-                        @include('theme::pages.chat._bubble', ['msg' => $msg])
-                    @endforeach
 
-                    {{-- Inline notes (sorted by created_at together with messages above would need merging; for simplicity show after messages) --}}
-                    @foreach($conversation->notes as $note)
-                    <div class="bubble-wrap outbound">
-                        <div class="bubble internal-note">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <i class="bi bi-lock-fill text-warning" style="font-size:11px"></i>
-                                <small class="fw-semibold text-warning-emphasis">{{ __('Internal Note') }} — {{ $note->author }}</small>
+                        @if ($entry->type === 'message')
+                            @include('theme::pages.chat._bubble', ['msg' => $entry->item])
+                        @else
+                            {{-- Internal note rendered inline in the timeline --}}
+                            <div class="bubble-wrap outbound">
+                                <div class="bubble internal-note">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="bi bi-lock-fill text-warning" style="font-size:11px"></i>
+                                        <small class="fw-semibold text-warning-emphasis">{{ __('Internal Note') }} — {{ $entry->item->author }}</small>
+                                    </div>
+                                    {!! nl2br(e($entry->item->note)) !!}
+                                    <div class="bubble-time">{{ $entry->item->created_at->format('H:i d M') }}</div>
+                                </div>
                             </div>
-                            {!! nl2br(e($note->note)) !!}
-                            <div class="bubble-time">{{ $note->created_at->format('H:i d M') }}</div>
-                        </div>
-                    </div>
+                        @endif
                     @endforeach
                 </div>
 
@@ -326,7 +321,7 @@
                     @endif
                     <textarea id="chatTextarea" class="form-control" rows="1"
                         placeholder="{{ __('Type a message... (Enter to send, Shift+Enter for new line)') }}"></textarea>
-                    <button id="sendBtn" class="btn btn-success" style="border-radius:50%;width:44px;height:44px;flex-shrink:0">
+                    <button id="sendBtn" class="btn btn-primary" style="border-radius:50%;width:44px;height:44px;flex-shrink:0">
                         <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
@@ -506,7 +501,7 @@
                 </div>
                 <div class="modal-footer py-2">
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-sm btn-success">{{ __('Start Chat') }}</button>
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Start Chat') }}</button>
                 </div>
             </form>
         </div>
@@ -541,7 +536,7 @@
             </div>
             <div class="modal-footer py-2">
                 <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                <button type="button" id="sendTemplateBtn" class="btn btn-sm btn-success" disabled>
+                <button type="button" id="sendTemplateBtn" class="btn btn-sm btn-primary" disabled>
                     <i class="bi bi-send me-1"></i>{{ __('Send Template') }}
                 </button>
             </div>
@@ -590,7 +585,10 @@ function buildBubble(msg) {
 }
 
 function tickHtml(status) {
-    const cls  = status === 'read' ? 'read' : (status === 'delivered' ? 'delivered' : 'sent');
+    if (status === 'failed') {
+        return `<span class="status-tick" style="color:#dc3545" title="{{ __('Delivery failed — contact may be outside 24h window. Use a template.') }}">✕</span>`;
+    }
+    const cls  = status === 'read' ? 'read' : (status === 'delivered' ? 'delivered' : '');
     const icon = (status === 'sent') ? '✓' : '✓✓';
     return `<span class="status-tick ${cls}">${icon}</span>`;
 }
@@ -624,7 +622,11 @@ function poll() {
 
 // ── Socket.io real-time ────────────────────────────────────────
 (function () {
-    var socketUrl = '{{ rtrim(env("APP_URL", ""), "/") }}:{{ env("PORT_NODE", 3100) }}';
+    @php
+        $parsedUrl = parse_url(env('APP_URL', 'http://localhost'));
+        $socketHost = ($parsedUrl['scheme'] ?? 'http') . '://' . ($parsedUrl['host'] ?? 'localhost');
+    @endphp
+    var socketUrl = '{{ $socketHost }}:{{ env("PORT_NODE", 3100) }}';
     var connected = false;
 
     try {
@@ -633,6 +635,8 @@ function poll() {
         socket.on('connect', function () {
             connected = true;
             socket.emit('join', 'conv-' + CONV_ID);
+            // Join the user inbox room so the sidebar updates live when new messages arrive
+            socket.emit('join', 'inbox-{{ auth()->id() }}');
             if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
         });
 
@@ -682,6 +686,46 @@ function poll() {
         // Feature 3: SLA breach alert
         socket.on('sla_breach', function (data) {
             toastr.warning(`⚠️ {{ __("SLA breach") }}: ${data.contact_name}`, '', { timeOut: 0, extendedTimeOut: 0 });
+        });
+
+        // Feature 3: Inbox update — handles new messages, assignments, resolves, and SLA breaches
+        socket.on('inbox_update', function (data) {
+            const convId  = data.conversation_id;
+            const list    = document.getElementById('convList');
+            if (!list) return;
+
+            const existing = list.querySelector(`.wachat-conv-item[data-conv-id="${convId}"]`);
+            if (existing) {
+                if (data.event === 'resolved') {
+                    // Remove from the open list (or dim it to indicate resolved)
+                    existing.style.opacity = '0.4';
+                    setTimeout(() => existing.remove(), 1500);
+                    return;
+                }
+                if (data.event === 'unassigned') {
+                    const chip = existing.querySelector('.agent-chip');
+                    if (chip) chip.remove();
+                }
+                if (data.event === 'assigned' && data.agent_name) {
+                    let chip = existing.querySelector('.agent-chip');
+                    if (!chip) {
+                        chip = document.createElement('span');
+                        chip.className = 'agent-chip ms-1';
+                        existing.querySelector('.wachat-conv-name')?.appendChild(chip);
+                    }
+                    chip.textContent = data.agent_name;
+                }
+                // Update preview text for new messages
+                const preview = existing.querySelector('.wachat-conv-preview');
+                if (preview && data.last_message) preview.textContent = data.last_message.substring(0, 32);
+                // Bubble to top of list for new activity
+                if (data.event !== 'assigned' && data.event !== 'unassigned') {
+                    list.prepend(existing);
+                }
+            } else if (!data.event || data.event === 'new_message') {
+                // Brand-new conversation not yet in list
+                toastr.info('{{ __("New conversation received.") }}', '', { timeOut: 4000 });
+            }
         });
 
         socket.on('disconnect', function () {
@@ -923,7 +967,31 @@ function filterByStatus(status) {
 function filterBySla() {
     const url = new URL(window.location.href);
     url.searchParams.set('sla_only', '1');
+    url.searchParams.delete('unassigned_only');
     window.location.href = url.toString();
+}
+
+function filterUnassigned() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('unassigned_only', '1');
+    url.searchParams.delete('sla_only');
+    window.location.href = url.toString();
+}
+
+// Supervisor: take over the current conversation (self-assign)
+function takeOverConversation() {
+    if (!confirm('{{ __("Take over this conversation from the current agent?") }}')) return;
+    // Show list of supervisor/admin agents to assign to self — for simplicity just unassign + reassign
+    $.ajax({
+        method : 'POST',
+        url    : UNASSIGN_URL,
+        headers: { 'X-CSRF-TOKEN': CSRF },
+        success: function() {
+            toastr.success('{{ __("You have taken over this conversation.") }}');
+            setTimeout(() => location.reload(), 800);
+        },
+        error: function() { toastr.error('{{ __("Failed to take over.") }}'); }
+    });
 }
 
 let searchTimer;
@@ -948,6 +1016,15 @@ if (document.getElementById('agentFilter')) {
         const url = new URL(window.location.href);
         if (this.value) url.searchParams.set('agent_id', this.value);
         else url.searchParams.delete('agent_id');
+        window.location.href = url.toString();
+    });
+}
+
+if (document.getElementById('teamFilter')) {
+    document.getElementById('teamFilter').addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        if (this.value) url.searchParams.set('team_id', this.value);
+        else url.searchParams.delete('team_id');
         window.location.href = url.toString();
     });
 }
