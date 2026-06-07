@@ -22,7 +22,6 @@
 .wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--dnd-text-muted); background:var(--dnd-bg); }
 .wachat-input-area      { padding:8px 12px; border-top:1px solid var(--dnd-border); display:flex; align-items:flex-end; gap:8px; background:var(--dnd-surface); }
 #chatTextarea           { resize:none; border-radius:var(--dnd-radius-pill); padding:8px 14px; font-size:14px; flex:1; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); }
-#typingIndicator        { padding:4px 14px; font-size:12px; color:var(--dnd-text-muted); min-height:24px; }
 .bubble-wrap            { display:flex; }
 .bubble-wrap.inbound    { justify-content:flex-start; }
 .bubble-wrap.outbound   { justify-content:flex-end; }
@@ -169,18 +168,21 @@
                             @endif
                         </div>
                         <div style="font-size:12px;color:#667781">
-                            {{ $conversation->contact_number }}
-                            &nbsp;·&nbsp;
-                            <span class="badge bg-success-subtle text-success">{{ $conversation->device->meta_profile['verified_name'] ?? $conversation->device->body }}</span>
-                            @if($conversation->assignedAgent)
+                            <span id="agentTypingLabel" style="display:none;font-style:italic;color:var(--dnd-accent-link)">{{ __('typing...') }}</span>
+                            <span id="agentTypingMeta">
+                                {{ $conversation->contact_number }}
                                 &nbsp;·&nbsp;
-                                <span class="agent-chip">
-                                    <i class="bi bi-person-check" style="font-size:10px"></i>
-                                    {{ $conversation->assignedAgent->name }}
-                                </span>
-                            @else
-                                &nbsp;·&nbsp; <span class="text-muted small">{{ __('Unassigned') }}</span>
-                            @endif
+                                <span class="badge bg-success-subtle text-success">{{ $conversation->device->meta_profile['verified_name'] ?? $conversation->device->body }}</span>
+                                @if($conversation->assignedAgent)
+                                    &nbsp;·&nbsp;
+                                    <span class="agent-chip">
+                                        <i class="bi bi-person-check" style="font-size:10px"></i>
+                                        {{ $conversation->assignedAgent->name }}
+                                    </span>
+                                @else
+                                    &nbsp;·&nbsp; <span class="text-muted small">{{ __('Unassigned') }}</span>
+                                @endif
+                            </span>
                         </div>
                     </div>
                     <div class="d-flex gap-2 ms-auto flex-shrink-0">
@@ -279,9 +281,6 @@
                     @endif
                 </div>
                 @endif
-
-                {{-- Typing indicator --}}
-                <div id="typingIndicator"></div>
 
                 {{-- Messages + notes in chronological order --}}
                 <div class="wachat-messages-area" id="messagesArea">
@@ -657,16 +656,23 @@ function poll() {
             });
         });
 
-        // Feature 3: Typing indicator from other agents
+        // Typing indicator from other agents — shown inline in the header subtitle
         socket.on('agent_typing', function (data) {
-            const indicator = document.getElementById('typingIndicator');
-            if (!indicator) return;
+            const label = document.getElementById('agentTypingLabel');
+            const meta  = document.getElementById('agentTypingMeta');
+            if (!label || !meta) return;
+            clearTimeout(window._typingClearTimer);
             if (data.typing) {
-                indicator.innerHTML = `<span class="text-muted"><i class="bi bi-three-dots"></i> ${data.agent_name} {{ __('is typing...') }}</span>`;
-                clearTimeout(window._typingClearTimer);
-                window._typingClearTimer = setTimeout(() => { indicator.innerHTML = ''; }, 4000);
+                label.textContent = data.agent_name + ' {{ __("is typing...") }}';
+                label.style.display = '';
+                meta.style.display  = 'none';
+                window._typingClearTimer = setTimeout(function () {
+                    label.style.display = 'none';
+                    meta.style.display  = '';
+                }, 4000);
             } else {
-                indicator.innerHTML = '';
+                label.style.display = 'none';
+                meta.style.display  = '';
             }
         });
 
