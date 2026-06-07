@@ -21,7 +21,8 @@
 .wachat-messages-area   { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:5px; }
 .wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--dnd-text-muted); background:var(--dnd-bg); }
 .wachat-input-area      { padding:8px 12px; border-top:1px solid var(--dnd-border); display:flex; align-items:flex-end; gap:8px; background:var(--dnd-surface); }
-#chatTextarea           { resize:none; border-radius:var(--dnd-radius-pill); padding:8px 14px; font-size:14px; flex:1; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); }
+.wachat-input-area .btn { height:44px; width:44px; padding:0; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+#chatTextarea           { resize:none; border-radius:var(--dnd-radius-pill); padding:11px 14px; font-size:14px; flex:1; min-height:44px; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); box-sizing:border-box; }
 .bubble-wrap            { display:flex; }
 .bubble-wrap.inbound    { justify-content:flex-start; }
 .bubble-wrap.outbound   { justify-content:flex-end; }
@@ -321,7 +322,7 @@
                     @endif
                     <textarea id="chatTextarea" class="form-control" rows="1"
                         placeholder="{{ __('Type a message... (Enter to send, Shift+Enter for new line)') }}"></textarea>
-                    <button id="sendBtn" class="btn btn-primary" style="border-radius:50%;width:44px;height:44px;flex-shrink:0">
+                    <button id="sendBtn" class="btn btn-primary" style="border-radius:50%">
                         <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
