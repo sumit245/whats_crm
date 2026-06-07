@@ -22,7 +22,7 @@
 .wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--dnd-text-muted); background:var(--dnd-bg); }
 .wachat-input-area      { padding:8px 12px; border-top:1px solid var(--dnd-border); display:flex; align-items:flex-end; gap:8px; background:var(--dnd-surface); }
 .wachat-input-area .btn { height:44px; width:44px; padding:0; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-#chatTextarea           { resize:none; border-radius:var(--dnd-radius-pill); padding:11px 14px; font-size:14px; flex:1; min-height:44px; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); box-sizing:border-box; }
+#chatTextarea           { resize:none; overflow:hidden; border-radius:var(--dnd-radius-pill); padding:11px 14px; font-size:14px; flex:1; min-height:44px; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); box-sizing:border-box; }
 .bubble-wrap            { display:flex; }
 .bubble-wrap.inbound    { justify-content:flex-start; }
 .bubble-wrap.outbound   { justify-content:flex-end; }
