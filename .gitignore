@@ -34,3 +34,12 @@ yarn-error.log
 
 /storage/logs/*
 !/storage/logs/.gitignore
+
+# Credentials and certificates
+/credentials/
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.key
