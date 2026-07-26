@@ -254,6 +254,15 @@ class MetaWebhookController extends Controller
             $newRank     = self::STATUS_RANK[$statusValue] ?? -1;
             if ($statusValue === 'failed' || $newRank > $currentRank) {
                 $chatMsg->update(['status' => $statusValue]);
+
+                // Push the tick update to the open chat UI in real time
+                SocketPushService::pushToConversation($chatMsg->conversation_id, 'message_status', [
+                    'conversation_id' => $chatMsg->conversation_id,
+                    'id'              => $chatMsg->id,
+                    'meta_message_id' => $metaMessageId,
+                    'status'          => $statusValue,
+                ]);
+
                 if ($statusValue === 'failed') {
                     Log::warning('Chat message delivery failed', [
                         'chat_message_id' => $chatMsg->id,

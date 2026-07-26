@@ -51,7 +51,7 @@ Route::post('/webhook/meta', [MetaWebhookController::class, 'receive'])->name('m
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
     if (env('ENABLE_INDEX') == 'no') {
-        Route::get('/', fn () => Redirect::to('/login'));
+        Route::get('/', fn() => Redirect::to('/login'));
     } else {
         Route::get('/', [IndexController::class, 'index'])->name('index');
     }
@@ -68,7 +68,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             \UniSharp\LaravelFilemanager\Lfm::routes();
         });
         Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager');
-        Route::get('/filemanager', fn () => redirect('/' . LaravelLocalization::getCurrentLocale() . '/laravel-filemanager'))->name('filemanager');
+        Route::get('/filemanager', fn() => redirect('/' . LaravelLocalization::getCurrentLocale() . '/laravel-filemanager'))->name('filemanager');
 
         // Devices (home)
         Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -182,22 +182,22 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::post('/chat/{id}/send-template', [ChatController::class, 'sendTemplate'])->name('chat.send.template');
 
         // Feature 3: Multi-agent live chat
-        Route::post('/chat/{id}/typing',   [ChatController::class, 'typing'])->name('chat.typing');
-        Route::post('/chat/{id}/notes',    [ChatController::class, 'storeNote'])->name('chat.notes.store');
-        Route::post('/chat/{id}/attribute',[ChatController::class, 'saveAttribute'])->name('chat.attribute.save');
-        Route::post('/chat/{id}/assign',   [ChatController::class, 'assign'])->name('chat.assign');
+        Route::post('/chat/{id}/typing', [ChatController::class, 'typing'])->name('chat.typing');
+        Route::post('/chat/{id}/notes', [ChatController::class, 'storeNote'])->name('chat.notes.store');
+        Route::post('/chat/{id}/attribute', [ChatController::class, 'saveAttribute'])->name('chat.attribute.save');
+        Route::post('/chat/{id}/assign', [ChatController::class, 'assign'])->name('chat.assign');
         Route::post('/chat/{id}/unassign', [ChatController::class, 'unassign'])->name('chat.unassign');
-        Route::post('/chat/{id}/resolve',  [ChatController::class, 'resolve'])->name('chat.resolve');
+        Route::post('/chat/{id}/resolve', [ChatController::class, 'resolve'])->name('chat.resolve');
 
         // Feature 3: Agent & Team management
-        Route::get('/agents',              [\App\Http\Controllers\AgentController::class, 'index'])->name('agents.index');
-        Route::post('/agents',             [\App\Http\Controllers\AgentController::class, 'store'])->name('agents.store');
-        Route::put('/agents/{id}',         [\App\Http\Controllers\AgentController::class, 'update'])->name('agents.update');
-        Route::delete('/agents/{id}',      [\App\Http\Controllers\AgentController::class, 'destroy'])->name('agents.destroy');
+        Route::get('/agents', [\App\Http\Controllers\AgentController::class, 'index'])->name('agents.index');
+        Route::post('/agents', [\App\Http\Controllers\AgentController::class, 'store'])->name('agents.store');
+        Route::put('/agents/{id}', [\App\Http\Controllers\AgentController::class, 'update'])->name('agents.update');
+        Route::delete('/agents/{id}', [\App\Http\Controllers\AgentController::class, 'destroy'])->name('agents.destroy');
         Route::post('/agents/{id}/status', [\App\Http\Controllers\AgentController::class, 'setStatus'])->name('agents.status');
-        Route::post('/teams',              [\App\Http\Controllers\AgentController::class, 'storeTeam'])->name('teams.store');
-        Route::put('/teams/{id}',          [\App\Http\Controllers\AgentController::class, 'updateTeam'])->name('teams.update');
-        Route::delete('/teams/{id}',       [\App\Http\Controllers\AgentController::class, 'destroyTeam'])->name('teams.destroy');
+        Route::post('/teams', [\App\Http\Controllers\AgentController::class, 'storeTeam'])->name('teams.store');
+        Route::put('/teams/{id}', [\App\Http\Controllers\AgentController::class, 'updateTeam'])->name('teams.update');
+        Route::delete('/teams/{id}', [\App\Http\Controllers\AgentController::class, 'destroyTeam'])->name('teams.destroy');
 
         // Preview / form helpers (still used by autoreply)
         Route::post('/preview-message', [ShowMessageController::class, 'index'])->name('previewMessage');
@@ -291,7 +291,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::post('/resend-message', [MessagesHistoryController::class, 'resend'])->name('resend.message');
         Route::post('/delete-messages', [MessagesHistoryController::class, 'deleteAll'])->name('delete.messages');
 
-        Route::get('/permission-denied', fn () => view('theme::pages.permission'))->name('permission.denied');
+        Route::get('/permission-denied', fn() => view('theme::pages.permission'))->name('permission.denied');
     });
 
     Route::middleware('guest')->group(function () {
@@ -306,8 +306,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
     });
 
     Route::match(['get', 'post'], '/logout', LogoutController::class)->name('logout');
-    Route::get('/install', [SettingController::class, 'install'])->name('setting.install_app');
-    Route::post('/install', [SettingController::class, 'install'])->name('settings.install_app');
-    Route::post('/settings/check_database_connection', [SettingController::class, 'test_database_connection'])->name('connectDB');
-    Route::post('/settings/activate_license', [SettingController::class, 'activate_license'])->name('activateLicense');
+    // Route::get('/install', [SettingController::class, 'install'])->name('setting.install_app');
+    // Route::post('/install', [SettingController::class, 'install'])->name('settings.install_app');
+    // Route::post('/settings/check_database_connection', [SettingController::class, 'test_database_connection'])->name('connectDB');
+    // Route::post('/settings/activate_license', [SettingController::class, 'activate_license'])->name('activateLicense');
 });

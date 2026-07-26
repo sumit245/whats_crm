@@ -6,7 +6,14 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server, { pingInterval: 25000, pingTimeout: 10000 });
+// The chat page connects from the app origin, which is a different port (and
+// sometimes a different host, e.g. localhost vs 127.0.0.1) than this server —
+// that is cross-origin, so CORS must be enabled or the handshake is blocked.
+const io = new Server(server, {
+    pingInterval: 25000,
+    pingTimeout: 10000,
+    cors: { origin: true, methods: ["GET", "POST"], credentials: true },
+});
 const port = process.env.PORT_NODE || 3100;
 
 const bodyParser = require("body-parser");

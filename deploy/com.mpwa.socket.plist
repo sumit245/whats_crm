@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd LaunchAgent for the Socket.io real-time relay (no pm2 required).
+
+  Install (run these yourself — they set up auto-start at login):
+      cp deploy/com.mpwa.socket.plist ~/Library/LaunchAgents/
+      launchctl load ~/Library/LaunchAgents/com.mpwa.socket.plist
+
+  Manage:
+      launchctl start  com.mpwa.socket      # start now
+      launchctl stop   com.mpwa.socket      # stop
+      launchctl unload ~/Library/LaunchAgents/com.mpwa.socket.plist   # disable
+
+  KeepAlive restarts it if it crashes; RunAtLoad starts it at login.
+  Logs go to storage/logs/socket*.log.
+
+  NOTE: paths below are absolute for THIS machine. If node or the project
+  moves, update ProgramArguments / WorkingDirectory accordingly.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mpwa.socket</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/node</string>
+        <string>/Applications/XAMPP/xamppfiles/htdocs/whats_crm/server.js</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Applications/XAMPP/xamppfiles/htdocs/whats_crm</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>PORT_NODE</key>
+        <string>3100</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Applications/XAMPP/xamppfiles/htdocs/whats_crm/storage/logs/socket.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Applications/XAMPP/xamppfiles/htdocs/whats_crm/storage/logs/socket-error.log</string>
+</dict>
+</plist>
