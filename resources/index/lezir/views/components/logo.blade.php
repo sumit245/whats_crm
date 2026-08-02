@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="40" viewBox="0 0 446 80" preserveAspectRatio="xMidYMid meet" style="margin: auto;" role="img" aria-label="DnD Connect">
+<svg xmlns="http://www.w3.org/2000/svg" width="223" height="40" viewBox="0 0 446 80" preserveAspectRatio="xMidYMid meet" style="width:clamp(150px,48vw,223px);height:auto;display:block" role="img" aria-label="DnD Connect">
   <title>DnD Connect</title>
   <!-- MPWA grid: stroke 8.79 | cap 43.95 | radius 5.86 -->
   <g fill="var(--bs-primary, #16a34a)">
