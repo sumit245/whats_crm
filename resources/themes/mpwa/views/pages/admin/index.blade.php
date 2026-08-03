@@ -1,6 +1,6 @@
 <x-layout-dashboard title="{{ __('Edit Welcome Page') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+<link rel="stylesheet" href="{{ asset('assets/vendor/pickr/classic.min.css') }}" />
+<script src="{{ asset('assets/vendor/pickr/pickr.min.js') }}"></script>
     <div class="row">
         <div class="col">
             <div class="card">

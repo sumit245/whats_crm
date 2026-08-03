@@ -1,7 +1,7 @@
 <x-layout-dashboard title="{{ isset($flow) ? __('Edit Flow') . ': ' . $flow->name : __('New Flow') }}">
 
 {{-- Drawflow CSS --}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drawflow/dist/drawflow.min.css">
+<link rel="stylesheet" href="{{ asset('assets/vendor/drawflow/drawflow.min.css') }}">
 
 <style>
 /* ── Editor shell ─────────────────────────────────────────────── */
@@ -286,7 +286,7 @@
     </div>
 </div>{{-- end flow-editor-wrap --}}
 
-<script src="https://cdn.jsdelivr.net/npm/drawflow/dist/drawflow.min.js"></script>
+<script src="{{ asset('assets/vendor/drawflow/drawflow.min.js') }}"></script>
 <script>
 (function () {
 'use strict';

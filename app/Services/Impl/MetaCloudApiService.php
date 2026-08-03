@@ -71,6 +71,39 @@ class MetaCloudApiService implements WhatsappService
         }
     }
 
+    /**
+     * Subscribe our Meta app to this WhatsApp Business Account so that inbound
+     * messages and delivery/read statuses are delivered to our webhook.
+     *
+     * Without this call Meta never sends webhooks for the WABA — sending still
+     * works (that's a direct Graph API call) but nothing is ever received.
+     * Requires an access token with the `whatsapp_business_management` permission.
+     */
+    public function subscribeToWaba(?Device $device = null): object
+    {
+        $device = $device ?? $this->device;
+
+        if (!$device?->waba_id || !$device?->access_token) {
+            return (object) ['status' => false, 'error' => 'Device is missing a WABA ID or access token'];
+        }
+
+        try {
+            $response = Http::withToken($device->access_token)
+                ->post("{$this->graphBase}/{$device->waba_id}/subscribed_apps");
+
+            if ($response->failed()) {
+                $error = $response->json('error.message', 'Subscription failed');
+                Log::error('WABA subscribe_apps failed', ['waba_id' => $device->waba_id, 'error' => $error]);
+                return (object) ['status' => false, 'error' => $error];
+            }
+
+            Log::info('WABA subscribed to app', ['waba_id' => $device->waba_id]);
+            return (object) ['status' => true, 'data' => $response->json()];
+        } catch (\Throwable $e) {
+            return (object) ['status' => false, 'error' => $e->getMessage()];
+        }
+    }
+
     // ─── WhatsappService interface ───────────────────────────────────────────
 
     public function sendText($request, $receiver): object|bool

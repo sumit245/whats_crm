@@ -1,34 +1,65 @@
 <x-layout-dashboard title="{{ __('Chat') }}">
 
 <style>
-/* Chat layout — colors via dnd-pages.css + tokens */
-.wachat-wrapper        { display:flex; overflow:hidden; }
-.wachat-sidebar        { width:300px; min-width:260px; flex-shrink:0; border-right:1px solid var(--dnd-border); display:flex; flex-direction:column; }
-.wachat-main           { flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
-.wachat-crm            { width:300px; min-width:260px; flex-shrink:0; border-left:1px solid var(--dnd-border); display:flex; flex-direction:column; font-size:13px; overflow-y:auto; }
-.wachat-sidebar-header  { padding:10px 12px; border-bottom:1px solid var(--dnd-border); min-height:90px; box-sizing:border-box; }
-.wachat-conv-list       { flex:1; overflow-y:auto; }
+/* ── WhatsApp-style design tokens (dnd-pages.css isn't loaded on this page) ── */
+.wachat-wrapper {
+    --dnd-border:         #e9edef;
+    --dnd-border-strong:  #d1d7db;
+    --dnd-text:           #111b21;
+    --dnd-text-secondary: #3b4a54;
+    --dnd-text-muted:     #667781;
+    --dnd-bg:             #f5f1ec;
+    --dnd-surface:        #ffffff;
+    --dnd-header:         #f0f2f5;   /* WhatsApp panel-header / input-bar gray */
+    --dnd-brand:          #008069;   /* WhatsApp green */
+    --dnd-brand-muted:    #d9fdd3;   /* outbound bubble green */
+    --dnd-brand-subtle:   #f0f2f5;
+    --dnd-accent-danger:  #dc3545;
+    --dnd-accent-warning: #f59e0b;
+    --dnd-accent-link:    #53bdeb;   /* read-tick blue */
+    --dnd-radius:         6px;
+    --dnd-radius-md:      7px;
+    --dnd-radius-pill:    999px;
+    --dnd-shadow-sm:      0 1px 1px rgba(11,20,26,.13);
+
+    display:flex; overflow:hidden;
+    height:calc(100vh - 108px);
+    height:calc(100dvh - 108px);
+    background:var(--dnd-bg);
+    border:1px solid var(--dnd-border);
+    border-radius:8px;
+}
+/* WhatsApp has no page footer — reclaim the space for a full-height chat */
+.footer { display:none; }
+
+.wachat-sidebar        { width:33%; max-width:420px; min-width:300px; flex-shrink:0; border-right:1px solid var(--dnd-border); display:flex; flex-direction:column; background:var(--dnd-surface); }
+.wachat-main           { flex:1 1 0; min-width:0; display:flex; flex-direction:column; background:var(--dnd-bg); }
+.wachat-crm            { width:300px; min-width:260px; flex-shrink:0; border-left:1px solid var(--dnd-border); display:flex; flex-direction:column; font-size:13px; overflow-y:auto; background:var(--dnd-surface); }
+.wachat-sidebar-header  { padding:10px 12px; border-bottom:1px solid var(--dnd-border); min-height:60px; box-sizing:border-box; background:var(--dnd-header); }
+.wachat-conv-list       { flex:1; overflow-y:auto; background:var(--dnd-surface); }
 .wachat-conv-item       { display:flex; align-items:center; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--dnd-border); transition:background .15s; }
-.wachat-conv-avatar     { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; color:#fff; }
+.wachat-conv-item:hover { background:#f5f6f6; }
+.wachat-conv-item.active{ background:#f0f2f5; }
+.wachat-conv-avatar     { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:16px; flex-shrink:0; color:#fff; background:var(--dnd-brand); }
 .wachat-conv-meta       { flex:1; min-width:0; padding-left:9px; }
 .wachat-conv-name       { font-weight:600; font-size:13px; color:var(--dnd-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .wachat-conv-preview    { font-size:11px; color:var(--dnd-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .wachat-conv-time       { font-size:11px; color:var(--dnd-text-muted); white-space:nowrap; margin-left:6px; }
 .unread-badge, .sla-badge { border-radius:50%; font-size:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 3px; margin-top:3px; color:#fff; }
 .sla-badge              { background:var(--dnd-accent-danger); }
-.wachat-sidebar-footer  { padding:10px; border-top:1px solid var(--dnd-border); }
-.wachat-main-header     { padding:10px 14px; border-bottom:1px solid var(--dnd-border); display:flex; align-items:center; min-height:90px; box-sizing:border-box; color:var(--dnd-text); gap:10px; }
+.wachat-sidebar-footer  { padding:10px; border-top:1px solid var(--dnd-border); background:var(--dnd-surface); }
+.wachat-main-header     { padding:8px 14px; border-bottom:1px solid var(--dnd-border); display:flex; align-items:center; min-height:60px; box-sizing:border-box; color:var(--dnd-text); gap:10px; background:var(--dnd-header); }
 .wachat-messages-area   { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:5px; }
 .wachat-empty           { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--dnd-text-muted); background:var(--dnd-bg); }
-.wachat-input-area      { padding:8px 12px; border-top:1px solid var(--dnd-border); display:flex; align-items:flex-end; gap:8px; background:var(--dnd-surface); }
+.wachat-input-area      { padding:8px 12px; display:flex; align-items:flex-end; gap:8px; background:var(--dnd-header); }
 .wachat-input-area .btn { height:44px; width:44px; padding:0; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 #chatTextarea           { resize:none; overflow:hidden; border-radius:var(--dnd-radius-pill); padding:11px 14px; font-size:14px; flex:1; min-height:44px; max-height:120px; color:var(--dnd-text); background:var(--dnd-surface); border:1px solid var(--dnd-border-strong); box-sizing:border-box; }
 .bubble-wrap            { display:flex; }
 .bubble-wrap.inbound    { justify-content:flex-start; }
 .bubble-wrap.outbound   { justify-content:flex-end; }
 .bubble                 { max-width:65%; padding:8px 12px; border-radius:var(--dnd-radius-md); font-size:14px; line-height:1.45; word-break:break-word; color:var(--dnd-text); box-shadow:var(--dnd-shadow-sm); }
-.bubble.inbound         { border-top-left-radius:0; }
-.bubble.outbound        { border-top-right-radius:0; }
+.bubble.inbound         { border-top-left-radius:0; background:var(--dnd-surface); }
+.bubble.outbound        { border-top-right-radius:0; background:var(--dnd-brand-muted); }
 .bubble.internal-note   { background:rgba(245,158,11,.15); border:1px dashed var(--dnd-accent-warning); max-width:80%; }
 .bubble-time            { font-size:11px; color:var(--dnd-text-muted); text-align:right; margin-top:3px; display:flex; align-items:center; justify-content:flex-end; gap:3px; }
 .bubble-media           { max-width:100%; border-radius:var(--dnd-radius); margin-bottom:4px; }
@@ -36,7 +67,7 @@
 .date-divider           { text-align:center; font-size:12px; color:var(--dnd-text-muted); margin:8px 0; }
 .date-divider span      { background:var(--dnd-brand-muted); color:var(--dnd-brand); padding:3px 10px; border-radius:var(--dnd-radius-pill); }
 .crm-section            { padding:12px; border-bottom:1px solid var(--dnd-border); }
-.wachat-crm > .crm-section:first-child { min-height:90px; box-sizing:border-box; }
+.wachat-crm > .crm-section:first-child { min-height:60px; box-sizing:border-box; background:var(--dnd-header); }
 .crm-section h6         { font-size:12px; font-weight:700; text-transform:uppercase; color:var(--dnd-text-muted); margin-bottom:8px; letter-spacing:.5px; }
 .attr-key               { font-size:12px; color:var(--dnd-text-muted); width:90px; flex-shrink:0; }
 .attr-val               { font-size:12px; font-weight:600; flex:1; cursor:pointer; padding:2px 4px; border-radius:var(--dnd-radius); color:var(--dnd-text); }
@@ -44,7 +75,10 @@
 .note-item              { background:rgba(245,158,11,.12); border-left:3px solid var(--dnd-accent-warning); padding:6px 8px; border-radius:var(--dnd-radius); margin-bottom:6px; font-size:12px; }
 .note-item.not-internal { background:var(--dnd-brand-muted); border-left-color:var(--dnd-brand); }
 .conv-status-tabs       { display:flex; gap:4px; padding:6px 10px; border-bottom:1px solid var(--dnd-border); }
-.conv-status-tabs .tab  { font-size:11px; padding:3px 8px; border-radius:var(--dnd-radius-pill); cursor:pointer; border:1px solid var(--dnd-border); white-space:nowrap; color:var(--dnd-text-secondary); }
+.conv-status-tabs .tab  { font-size:11px; padding:3px 10px; border-radius:var(--dnd-radius-pill); cursor:pointer; border:1px solid var(--dnd-border); white-space:nowrap; color:var(--dnd-text-secondary); transition:background .15s,color .15s,border-color .15s; }
+.conv-status-tabs .tab:hover      { background:var(--dnd-brand-subtle); }
+.conv-status-tabs .tab.active     { background:var(--dnd-brand); color:#fff; border-color:var(--dnd-brand); font-weight:600; }
+.conv-status-tabs #slaFilterTab.active { background:var(--dnd-accent-danger); color:#fff !important; border-color:var(--dnd-accent-danger) !important; }
 .btn-xs { padding:2px 7px; font-size:11px; }
 .internal-mode-bar { background:rgba(245,158,11,.12); border-bottom:1px solid var(--dnd-accent-warning); padding:6px 14px; font-size:12px; color:var(--dnd-text); display:flex; align-items:center; gap:8px; }
 /* ── Attachment bottom-sheet ── */
@@ -100,12 +134,50 @@
 #noteFlyIn .ql-toolbar.ql-snow      { border:none !important; border-bottom:1px solid var(--dnd-border) !important; }
 #noteFlyIn .ql-container.ql-snow    { border:none !important; height:100%; }
 #noteFlyIn .ql-snow .ql-picker-options { background:var(--dnd-surface); }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+.wachat-back    { display:none; }              /* mobile-only "back to list" button */
+.crm-close-btn  { display:none; }              /* mobile-only close button inside CRM panel */
+.crm-backdrop   { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:1040; opacity:0; visibility:hidden; transition:opacity .2s ease; }
+.crm-backdrop.show { opacity:1; visibility:visible; }
+
+/* On medium screens the CRM panel would starve the chat thread, so make it a slide-in overlay */
+@media (max-width: 1100px) {
+    .wachat-crm {
+        position:fixed; top:60px; right:0; bottom:0; height:calc(100vh - 60px);
+        width:min(340px, 88vw); z-index:1050;
+        background:var(--dnd-surface, #fff); box-shadow:-4px 0 24px rgba(0,0,0,.18);
+        transform:translateX(100%); transition:transform .25s ease;
+        display:flex !important;
+    }
+    .wachat-crm.crm-open { transform:none; }
+    .crm-close-btn { display:inline-flex; }
+}
+
+/* On phones show a single pane at a time: conversation list OR the open thread */
+@media (max-width: 767px) {
+    /* Edge-to-edge, full-screen native feel (no page gutter, no card border) */
+    .page-content { padding:0 !important; }
+    .wachat-wrapper {
+        border:0; border-radius:0;
+        height:calc(100vh - 60px);
+        height:calc(100dvh - 60px);
+    }
+    .wachat-sidebar { width:100%; min-width:0; max-width:none; border-right:none; }
+    .wachat-main    { min-width:0; }
+    .wachat-wrapper.has-active .wachat-sidebar    { display:none; }
+    .wachat-wrapper:not(.has-active) .wachat-main { display:none; }
+    .wachat-back    { display:inline-flex; }
+    .wachat-main-header { padding:8px 10px; min-height:56px; }
+    .wachat-sidebar-header, .wachat-crm > .crm-section:first-child { min-height:auto; }
+    .bubble { max-width:85%; }
+}
 </style>
 {{-- Quill 2 rich text editor --}}
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
 
 <div>
-    <div class="wachat-wrapper">
+    <div class="wachat-wrapper {{ isset($conversation) ? 'has-active' : '' }}">
 
         {{-- ── LEFT SIDEBAR ──────────────────────────────── --}}
         <div class="wachat-sidebar">
@@ -231,6 +303,11 @@
 
                 {{-- Header --}}
                 <div class="wachat-main-header">
+                    <a class="wachat-back btn btn-sm btn-outline-secondary align-items-center flex-shrink-0"
+                       href="{{ route('chat.index') }}?conv_status={{ $statusFilter ?? 'open' }}"
+                       title="{{ __('Back to conversations') }}">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
                     <div class="wachat-conv-avatar" style="{{ $conversation->sla_breached ? 'background:#dc3545' : '' }}">
                         {{ $conversation->avatar_letter }}
                     </div>
@@ -249,8 +326,10 @@
                         <div style="font-size:12px;color:#667781">
                             <span id="agentTypingLabel" style="display:none;font-style:italic;color:var(--dnd-accent-link)">{{ __('typing...') }}</span>
                             <span id="agentTypingMeta">
-                                {{ $conversation->contact_number }}
-                                &nbsp;·&nbsp;
+                                @if($conversation->display_name !== $conversation->contact_number)
+                                    {{ $conversation->contact_number }}
+                                    &nbsp;·&nbsp;
+                                @endif
                                 <span class="badge bg-success-subtle text-success">{{ $conversation->device->meta_profile['verified_name'] ?? $conversation->device->body }}</span>
                                 @if($conversation->assignedAgent)
                                     &nbsp;·&nbsp;
@@ -269,7 +348,7 @@
                         @if($agents->count() > 0)
                         <div class="dropdown">
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-check"></i> {{ __('Assign') }}
+                                <i class="bi bi-person-check"></i> <span class="d-none d-md-inline">{{ __('Assign') }}</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:170px">
                                 @foreach($agents as $agent)
@@ -296,7 +375,7 @@
                         @if(($isSupervisor ?? false) && $conversation->assignedAgent)
                         <button class="btn btn-sm btn-outline-danger" onclick="takeOverConversation()"
                             title="{{ __('Take over this conversation from the current agent') }}">
-                            <i class="bi bi-person-fill-exclamation"></i> {{ __('Take Over') }}
+                            <i class="bi bi-person-fill-exclamation"></i> <span class="d-none d-md-inline">{{ __('Take Over') }}</span>
                         </button>
                         @endif
 
@@ -304,14 +383,14 @@
                         @if($conversation->conversation_status !== 'resolved')
                         <button class="btn btn-sm btn-outline-success" onclick="resolveConversation()"
                             title="{{ __('Resolve & close conversation') }}">
-                            <i class="bi bi-check2-circle"></i> {{ __('Resolve') }}
+                            <i class="bi bi-check2-circle"></i> <span class="d-none d-md-inline">{{ __('Resolve') }}</span>
                         </button>
                         @endif
 
                         {{-- Internal note toggle --}}
                         <button class="btn btn-sm btn-outline-warning" id="internalModeBtn"
                             onclick="toggleInternalMode()" title="{{ __('Toggle internal note mode') }}">
-                            <i class="bi bi-lock"></i> {{ __('Note') }}
+                            <i class="bi bi-lock"></i> <span class="d-none d-md-inline">{{ __('Note') }}</span>
                         </button>
 
                         {{-- Toggle CRM panel --}}
@@ -541,6 +620,13 @@
         {{-- ── CRM RIGHT PANEL ──────────────────────────── --}}
         @if(isset($conversation))
         <div class="wachat-crm" id="crmPanel">
+
+            {{-- Mobile-only close button (panel is an overlay on small screens) --}}
+            <button type="button" class="crm-close-btn btn btn-sm btn-outline-secondary align-items-center"
+                    style="position:absolute;top:8px;right:8px;z-index:2;" onclick="toggleCrm()"
+                    title="{{ __('Close') }}">
+                <i class="bi bi-x-lg"></i>
+            </button>
 
             {{-- Contact Info --}}
             <div class="crm-section">
@@ -1331,6 +1417,14 @@ function tickHtml(status) {
     return `<span class="status-tick ${cls}">${icon}</span>`;
 }
 
+// Replace the delivery tick on a single outbound bubble (by ChatMessage id)
+function updateTick(id, status) {
+    const time = document.querySelector(`.bubble-wrap[data-id="${id}"] .bubble-time`);
+    if (!time) return;
+    const tick = time.querySelector('.status-tick');
+    if (tick) tick.outerHTML = tickHtml(status);
+}
+
 // ── Polling (fallback) ─────────────────────────────────────────
 function poll() {
     $.getJSON(POLL_URL + '?after_id=' + lastId, function(data) {
@@ -1349,17 +1443,17 @@ function poll() {
         }
         if (data.messages) {
             data.messages.forEach(function(msg) {
-                if (msg.direction === 'outbound') {
-                    const t = $(`.bubble-wrap[data-id="${msg.id}"] .bubble-time`);
-                    if (t.length) t.find('.status-tick').replaceWith(tickHtml(msg.status));
-                }
+                if (msg.direction === 'outbound') updateTick(msg.id, msg.status);
             });
         }
     });
 }
 
 // ── Socket.io real-time ────────────────────────────────────────
-(function () {
+// socket.io is loaded with `defer`, so it isn't available while this inline
+// script is parsed. Wait for DOMContentLoaded (fires after deferred scripts
+// have executed) so `io` is defined before we connect.
+document.addEventListener('DOMContentLoaded', function () {
     @php
         $parsedUrl = parse_url(env('APP_URL', 'http://localhost'));
         $socketHost = ($parsedUrl['scheme'] ?? 'http') . '://' . ($parsedUrl['host'] ?? 'localhost');
@@ -1392,6 +1486,11 @@ function poll() {
                     });
                 }
             });
+        });
+
+        // Delivery tick updates (sent → delivered → read / failed) in real time
+        socket.on('message_status', function (data) {
+            if (data && data.id) updateTick(data.id, data.status);
         });
 
         // Typing indicator from other agents — shown inline in the header subtitle
@@ -1487,7 +1586,7 @@ function poll() {
     } catch (e) {
         pollTimer = setInterval(poll, 3000);
     }
-})();
+});
 
 // ── Send message ───────────────────────────────────────────────
 function sendMessage() {
@@ -1671,7 +1770,31 @@ function resolveConversation() {
 // ── CRM panel toggle ───────────────────────────────────────────
 function toggleCrm() {
     const panel = document.getElementById('crmPanel');
-    if (panel) panel.style.display = (panel.style.display === 'none') ? '' : 'none';
+    if (!panel) return;
+    // On narrow screens the panel is a slide-in overlay; on desktop it's toggled in-flow.
+    if (window.matchMedia('(max-width: 1100px)').matches) {
+        const opening = !panel.classList.contains('crm-open');
+        panel.classList.toggle('crm-open', opening);
+        crmBackdrop(opening);
+    } else {
+        panel.style.display = (panel.style.display === 'none') ? '' : 'none';
+    }
+}
+
+function crmBackdrop(show) {
+    let bd = document.getElementById('crmBackdrop');
+    if (show) {
+        if (!bd) {
+            bd = document.createElement('div');
+            bd.id = 'crmBackdrop';
+            bd.className = 'crm-backdrop';
+            bd.addEventListener('click', () => toggleCrm());
+            document.body.appendChild(bd);
+        }
+        requestAnimationFrame(() => bd.classList.add('show'));
+    } else if (bd) {
+        bd.classList.remove('show');
+    }
 }
 
 // ── Sidebar filters ────────────────────────────────────────────

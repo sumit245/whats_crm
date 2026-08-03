@@ -318,21 +318,7 @@ class ChatController extends Controller
             return response()->json(['error' => true, 'message' => $result->error ?? 'Template send failed'], 422);
         }
 
-        // Build a human-readable preview by substituting variables into the BODY component text
-        $bodyText = null;
-        foreach ((array) ($template->components ?? []) as $comp) {
-            if (strtoupper($comp['type'] ?? '') === 'BODY') {
-                $bodyText = $comp['text'] ?? null;
-                break;
-            }
-        }
-        if ($bodyText) {
-            $vars = array_values($request->vars ?? []);
-            foreach ($vars as $i => $val) {
-                $bodyText = str_replace('{{' . ($i + 1) . '}}', $val, $bodyText);
-            }
-        }
-        $preview = $bodyText ?: "[Template: {$template->name}]";
+        $preview = $this->renderTemplateBody($template, $request->vars ?? []);
         $chatMessage = ChatMessage::create([
             'conversation_id' => $conversation->id,
             'direction'       => 'outbound',
@@ -640,6 +626,49 @@ class ChatController extends Controller
         }
 
         return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
+    }
+
+    /**
+     * Render the human-readable text of a WABA template (header + body + footer)
+     * with body variables substituted, so the chat shows the actual message that
+     * was sent rather than a "[Template: name]" placeholder.
+     */
+    private function renderTemplateBody(\App\Models\WabaTemplate $template, array $vars = []): string
+    {
+        // Body variables are positional: {{1}} -> first value, {{2}} -> second, ...
+        $values = array_values($vars);
+        $parts  = [];
+
+        foreach ($template->components ?? [] as $comp) {
+            $type = strtoupper($comp['type'] ?? '');
+            $text = $comp['text'] ?? '';
+            if ($text === '') {
+                continue;
+            }
+            // Only TEXT headers carry displayable text; image/video/document headers have none.
+            if ($type === 'HEADER' && strtoupper($comp['format'] ?? 'TEXT') !== 'TEXT') {
+                continue;
+            }
+            if (in_array($type, ['HEADER', 'BODY', 'FOOTER'], true)) {
+                $parts[] = $this->fillTemplateVars($text, $values);
+            }
+        }
+
+        $rendered = trim(implode("\n\n", $parts));
+
+        return $rendered !== '' ? $rendered : "[Template: {$template->name}]";
+    }
+
+    /**
+     * Replace {{1}}, {{2}}, ... placeholders with the provided positional values.
+     * Unmatched placeholders are left intact.
+     */
+    private function fillTemplateVars(string $text, array $values): string
+    {
+        return preg_replace_callback('/\{\{\s*(\d+)\s*\}\}/', function ($m) use ($values) {
+            $idx = (int) $m[1] - 1;
+            return $values[$idx] ?? $m[0];
+        }, $text);
     }
 
     public function start(Request $request)

@@ -1,7 +1,8 @@
 {
   "name": "mpwa-socket",
   "version": "1.0.0",
-  "description": "Socket.io real-time push server for MPWA",
+  "private": true,
+  "description": "Socket.io real-time relay for the WhatsApp CRM chat (Meta Cloud API). PHP pushes events to POST /push; browsers join conversation/inbox rooms.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

@@ -1,7 +1,7 @@
 <x-layout-dashboard title="{{__('Auto Replies')}}">
 	<link href="{{ asset('css/custom.css') }}" rel="stylesheet">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+	<link href="{{ asset('assets/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css') }}" rel="stylesheet">
+	<script src="{{ asset('assets/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js') }}"></script>
 	<style>
         .bootstrap-tagsinput {
             width: 100%;
@@ -271,10 +271,10 @@
 		</div>
 	</div>
 	<!--  -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js"></script>
-	<script src="https://woody180.github.io/vanilla-javascript-emoji-picker/vanillaEmojiPicker.js"></script>
+	<script src="{{ asset('assets/vendor/lodash/lodash.min.js') }}"></script>
+	<link rel="stylesheet" href="{{ asset('assets/vendor/leaflet/leaflet.css') }}" />
+	<script src="{{ asset('assets/vendor/leaflet/leaflet.js') }}"></script>
+	<script src="{{ asset('assets/vendor/emoji-picker/vanillaEmojiPicker.js') }}"></script>
 	<script src="{{asset('js/autoreply2.js')}}"></script>
 	<script>
 			function loadScript(url) {

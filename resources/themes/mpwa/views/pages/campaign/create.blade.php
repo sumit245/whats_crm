@@ -196,11 +196,11 @@
         </div>
     </div>
     {{-- end wizard --}}
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js"></script>
+	<link rel="stylesheet" href="{{ asset('assets/vendor/leaflet/leaflet.css') }}" />
+	<script src="{{ asset('assets/vendor/leaflet/leaflet.js') }}"></script>
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/js/form-select2.js') }}"></script>
-	<script src="https://woody180.github.io/vanilla-javascript-emoji-picker/vanillaEmojiPicker.js"></script>
+	<script src="{{ asset('assets/vendor/emoji-picker/vanillaEmojiPicker.js') }}"></script>
     <script>
         $(document).ready(function() {
 

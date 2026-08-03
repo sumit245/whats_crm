@@ -96,7 +96,7 @@ Route::post('/wh/{token}', [InboundWebhookController::class, 'receive'])->name('
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
     if (env('ENABLE_INDEX') == 'no') {
-        Route::get('/', fn () => Redirect::to('/login'));
+        Route::get('/', fn() => Redirect::to('/login'));
     } else {
         Route::get('/', [IndexController::class, 'index'])->name('index');
     }
@@ -113,7 +113,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             \UniSharp\LaravelFilemanager\Lfm::routes();
         });
         Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager');
-        Route::get('/filemanager', fn () => redirect('/' . LaravelLocalization::getCurrentLocale() . '/laravel-filemanager'))->name('filemanager');
+        Route::get('/filemanager', fn() => redirect('/' . LaravelLocalization::getCurrentLocale() . '/laravel-filemanager'))->name('filemanager');
 
         // Devices (home) — owner only
         Route::get('/home', [HomeController::class, 'index'])->name('home')->middleware('no.agent');
@@ -504,7 +504,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::post('/resend-message', [MessagesHistoryController::class, 'resend'])->name('resend.message');
         Route::post('/delete-messages', [MessagesHistoryController::class, 'deleteAll'])->name('delete.messages');
 
-        Route::get('/permission-denied', fn () => view('theme::pages.permission'))->name('permission.denied');
+        Route::get('/permission-denied', fn() => view('theme::pages.permission'))->name('permission.denied');
     });
 
     // Agent invitation accept (public — no auth required)
@@ -523,8 +523,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
     });
 
     Route::match(['get', 'post'], '/logout', LogoutController::class)->name('logout');
-    Route::get('/install', [SettingController::class, 'install'])->name('setting.install_app');
-    Route::post('/install', [SettingController::class, 'install'])->name('settings.install_app');
-    Route::post('/settings/check_database_connection', [SettingController::class, 'test_database_connection'])->name('connectDB');
-    Route::post('/settings/activate_license', [SettingController::class, 'activate_license'])->name('activateLicense');
+    // Route::get('/install', [SettingController::class, 'install'])->name('setting.install_app');
+    // Route::post('/install', [SettingController::class, 'install'])->name('settings.install_app');
+    // Route::post('/settings/check_database_connection', [SettingController::class, 'test_database_connection'])->name('connectDB');
+    // Route::post('/settings/activate_license', [SettingController::class, 'activate_license'])->name('activateLicense');
 });

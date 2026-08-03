@@ -69,7 +69,7 @@ class HomeController extends Controller
 
         $profile = $result->data;
 
-        $request->user()->devices()->create([
+        $device = $request->user()->devices()->create([
             'body'             => $request->sender,
             'phone_number_id'  => $request->phone_number_id,
             'waba_id'          => $request->waba_id,
@@ -85,7 +85,18 @@ class HomeController extends Controller
             ],
         ]);
 
-        return back()->with('alert', ['type' => 'success', 'msg' => __('Device connected successfully!')]);
+        // Subscribe this WABA to our app so inbound messages + delivery/read
+        // statuses reach our webhook. Sending works without this; receiving does not.
+        $subscribe = (new MetaCloudApiService($device))->subscribeToWaba();
+
+        $msg = __('Device connected successfully!');
+        if (!$subscribe->status) {
+            $msg .= ' ' . __('Note: webhook subscription failed') . ' — ' . $subscribe->error
+                 . '. ' . __('Receiving messages/statuses needs a system-user token with whatsapp_business_management permission and a webhook configured in Meta.');
+            return back()->with('alert', ['type' => 'warning', 'msg' => $msg]);
+        }
+
+        return back()->with('alert', ['type' => 'success', 'msg' => $msg]);
     }
 
     public function destroy(Request $request)
