@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright © Magd Almuntaser, OneXGen Technology. All rights reserved.
+Copyright ï¿½ Magd Almuntaser, OneXGen Technology. All rights reserved.
 Project: MPWA Whatsapp Gateway | Multi Device
 Licensed under the CC BY-NC-ND 4.0 License.
 For details, visit https://creativecommons.org/licenses/by-nc-nd/4.0/.
@@ -239,8 +239,8 @@ class PaymentController extends Controller
         $map = [
             '$' => 'USD',
             '?' => 'EUR',
-            '£' => 'GBP',
-            '¥' => 'JPY',
+            'ï¿½' => 'GBP',
+            'ï¿½' => 'JPY',
             '?' => 'INR',
             '?' => 'RUB',
         ];

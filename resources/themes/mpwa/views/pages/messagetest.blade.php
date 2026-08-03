@@ -9,26 +9,6 @@
             @slot('msg', session('alert')['msg'])
         </x-alert>
     @endif
-    @if ($errors->any())
-        <div class="alert border-0 bg-light-danger alert-dismissible fade show py-2">
-            <div class="d-flex align-items-center">
-                <div class="fs-3 text-danger">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-
-                </div>
-                <div class="ms-3">
-                    <p>{{__('The given data was invalid.')}}</p>
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-
-        </div>
-    @endif
     {{-- form --}}
     <div class="row">
         <div class="col-lg-12 mx-auto">

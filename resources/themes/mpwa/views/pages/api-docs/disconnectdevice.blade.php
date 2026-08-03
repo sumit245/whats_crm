@@ -1,7 +1,6 @@
-<div class="tab-pane fade e" id="disconnectdevice" role="tabpanel">
     <h3>Disconnect device</h3>
     <p>Method : <code class="text-success">POST</code>
-    <p>Endpoint: <code>{{ url('/') }}/logout-device</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/logout-device</code></p>
 
     <p>Request Body : (JSON If POST)
     <table class="table">
@@ -49,4 +48,3 @@
 
 
 
-</div>

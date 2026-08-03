@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html class="semi-dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa']) ? 'rtl' : 'ltr' }}">
+<html class="light-theme" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa']) ? 'rtl' : 'ltr' }}">
 
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>{{ $title }} | {{ config('config.site_name') }}</title>
+    <script>
+        (function () {
+            var t = localStorage.getItem('dnd-theme');
+            if (t !== 'dark' && t !== 'light') return;
+            var root = document.documentElement;
+            root.classList.remove('light-theme', 'dark-theme', 'semi-dark', 'minimal-theme');
+            root.classList.add(t === 'dark' ? 'dark-theme' : 'light-theme');
+        })();
+    </script>
+	<title>{{ html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8') }} | {{ config('config.site_name') }}</title>
     <link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png" />
     <!--plugins-->
     <link href="{{ asset('assets/plugins/vectormap/jquery-jvectormap-2.0.2.css') }}" rel="stylesheet" />
@@ -31,8 +40,18 @@
     <link href="{{ asset('assets/css/light-theme.' . (in_array(app()->getLocale(), ['ar', 'he', 'fa']) ? 'rtl' : 'ltr') . '.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/semi-dark.' . (in_array(app()->getLocale(), ['ar', 'he', 'fa']) ? 'rtl' : 'ltr') . '.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/header-colors.' . (in_array(app()->getLocale(), ['ar', 'he', 'fa']) ? 'rtl' : 'ltr') . '.css') }}" rel="stylesheet" />
-    {{-- shared dashboard design layer (resolved under the theme asset root) --}}
-    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet" />
+    @php
+        $dndTheme = env('THEME_NAME', 'mpwa');
+        $dndCssVer = fn ($file) => @filemtime(public_path('themes/' . $dndTheme . '/css/' . $file)) ?: time();
+    @endphp
+    {{-- DnD design system v2 --}}
+    <link href="{{ asset('css/dnd-tokens.css') }}?v={{ $dndCssVer('dnd-tokens.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/dnd-components.css') }}?v={{ $dndCssVer('dnd-components.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/dnd-forms.css') }}?v={{ $dndCssVer('dnd-forms.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/dnd-buttons.css') }}?v={{ $dndCssVer('dnd-buttons.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/dnd-pages.css') }}?v={{ $dndCssVer('dnd-pages.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/dashboard.css') }}?v={{ $dndCssVer('dashboard.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/dnd-chrome.css') }}?v={{ $dndCssVer('dnd-chrome.css') }}" rel="stylesheet" />
     {{-- csrf --}}
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <script>window.BASE_URL = '{{ request()->getBaseUrl() . '/' . app()->getLocale() }}';</script>
@@ -111,6 +130,20 @@
     </script>
     {{-- Socket.io client (loaded globally; chat page uses it for real-time events) --}}
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+
+    {{-- Global flash messages via toastr --}}
+    <script>
+        @if(session('success'))  toastr.success('{{ addslashes(session('success')) }}'); @endif
+        @if(session('error'))    toastr.error('{{ addslashes(session('error')) }}'); @endif
+        @if(session('warning'))  toastr.warning('{{ addslashes(session('warning')) }}'); @endif
+        @if(session('info'))     toastr.info('{{ addslashes(session('info')) }}'); @endif
+        @if(session('status'))   toastr.success('{{ addslashes(session('status')) }}'); @endif
+        @foreach($errors->all() as $e)
+        toastr.error('{{ addslashes($e) }}');
+        @endforeach
+    </script>
+
+    @stack('scripts')
 </body>
 
 </html>

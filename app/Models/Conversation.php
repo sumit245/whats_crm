@@ -59,6 +59,16 @@ class Conversation extends Model
         return $this->hasMany(\App\Models\ChatNote::class)->orderBy('created_at');
     }
 
+    public function labels()
+    {
+        return $this->belongsToMany(
+            \App\Models\ConversationLabel::class,
+            'conversation_label',
+            'conversation_id',
+            'label_id'
+        );
+    }
+
     public function getSlaMinutesElapsedAttribute(): ?int
     {
         if (!$this->assigned_at || $this->first_response_at || $this->resolved_at) {

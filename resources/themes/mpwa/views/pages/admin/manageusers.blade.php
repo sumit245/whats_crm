@@ -12,16 +12,6 @@
             @slot('msg', session('alert')['msg'])
         </x-alert>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <div class="row mt-4">
         <div class="col">
             <div class="card">
@@ -124,7 +114,6 @@
             </div>
 
         </div>
-
 
         <!-- Modal -->
         <div class="modal fade" id="modalUser" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">

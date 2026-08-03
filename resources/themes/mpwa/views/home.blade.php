@@ -13,7 +13,7 @@
             {{-- Summary cards --}}
             <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-4 g-3">
                 <div class="col">
-                    <div class="card rounded-4 h-100">
+                    <div class="card rounded h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div>
@@ -29,17 +29,17 @@
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card rounded-4 h-100">
+                    <div class="card rounded h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div>
                                     <p class="mb-1">{{ __('Blast / Bulk') }}</p>
-                                    <p class="mb-0 badge bg-warning">{{ $user->blasts_pending }} {{ __('Pending') }}</p>
-                                    <p class="mb-0 badge bg-success">{{ $user->blasts_success }} {{ __('Sent') }}</p>
-                                    <p class="mb-0 badge bg-danger">{{ $user->blasts_failed }} {{ __('Failed') }}</p>
+                                    <p class="mb-0 badge dnd-badge-warning">{{ $user->blasts_pending }} {{ __('Pending') }}</p>
+                                    <p class="mb-0 badge dnd-badge-success">{{ $user->blasts_success }} {{ __('Sent') }}</p>
+                                    <p class="mb-0 badge dnd-badge-danger">{{ $user->blasts_failed }} {{ __('Failed') }}</p>
                                     <p class="mb-0 mt-2 font-13">{{ __(':n Campaigns', ['n' => $user->campaigns_count]) }}</p>
                                 </div>
-                                <div class="ms-auto widget-icon bg-success text-white">
+                                <div class="ms-auto widget-icon bg-primary text-white">
                                     <i class="bi bi-broadcast"></i>
                                 </div>
                             </div>
@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card rounded-4 h-100">
+                    <div class="card rounded h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card rounded-4 h-100">
+                    <div class="card rounded h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div>
@@ -73,7 +73,7 @@
                                         {{ __('Remaining: :n', ['n' => $user->level === 'admin' ? '∞' : number_format($user->plan_data['messages_limit'] ?? 0)]) }}
                                     </p>
                                 </div>
-                                <div class="ms-auto widget-icon bg-info text-white">
+                                <div class="ms-auto widget-icon bg-primary text-white">
                                     <i class="bi bi-chat-left-text"></i>
                                 </div>
                             </div>

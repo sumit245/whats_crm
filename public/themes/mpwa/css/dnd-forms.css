@@ -1,0 +1,128 @@
+/* =====================================================================
+   DnD Connect — forms, labels, placeholders (light + dark)
+   ===================================================================== */
+
+.form-control,
+.form-select,
+textarea.form-control {
+    color: var(--dnd-text) !important;
+    background-color: var(--dnd-surface) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border-strong) !important;
+    border-radius: var(--dnd-radius) !important;
+}
+
+.form-control::placeholder,
+.form-select::placeholder {
+    color: var(--dnd-text-placeholder) !important;
+    opacity: 1 !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    color: var(--dnd-text) !important;
+    background-color: var(--dnd-surface) !important;
+    border-color: var(--dnd-brand) !important;
+    box-shadow: 0 0 0 2px var(--dnd-brand-muted) !important;
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.form-select:disabled {
+    color: var(--dnd-text-muted) !important;
+    background-color: var(--dnd-surface-raised) !important;
+    opacity: 1 !important;
+}
+
+.form-label,
+label.form-label {
+    color: var(--dnd-text-secondary);
+    font-weight: 500;
+    margin-bottom: var(--dnd-space-xs);
+}
+
+.form-text,
+.text-muted {
+    color: var(--dnd-text-muted) !important;
+}
+
+.input-group-text {
+    color: var(--dnd-text-secondary) !important;
+    background-color: var(--dnd-surface-raised) !important;
+    border-color: var(--dnd-border-strong) !important;
+}
+
+html.dark-theme .form-control,
+html.dark-theme .form-select,
+html.semi-dark .form-control,
+html.semi-dark .form-select {
+    background-color: var(--dnd-surface) !important;
+    color: var(--dnd-text) !important;
+    border-color: var(--dnd-border-strong) !important;
+}
+
+html.dark-theme ::placeholder,
+html.semi-dark ::placeholder {
+    color: var(--dnd-text-placeholder) !important;
+    opacity: 1 !important;
+}
+
+.dropdown-item {
+    color: var(--dnd-text);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    color: var(--dnd-text);
+    background-color: var(--dnd-brand-muted);
+}
+
+.dropdown-header {
+    color: var(--dnd-text-secondary);
+}
+
+.dropdown-menu {
+    background-color: var(--dnd-surface);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    color: var(--dnd-text);
+}
+
+.dropdown-divider {
+    border-color: var(--dnd-border);
+}
+
+.breadcrumb-item,
+.breadcrumb-item a {
+    color: var(--dnd-text-muted);
+}
+
+.breadcrumb-item.active {
+    color: var(--dnd-text);
+}
+
+.page-header__title {
+    color: var(--dnd-text);
+}
+
+.page-header__subtitle {
+    color: var(--dnd-text-muted);
+}
+
+.table {
+    color: var(--dnd-text);
+    --bs-table-bg: transparent;
+}
+
+.table > :not(caption) > * > * {
+    border-bottom-color: var(--dnd-border);
+}
+
+.card {
+    color: var(--dnd-text);
+}
+
+.card-header,
+.card-footer {
+    color: var(--dnd-text);
+    background-color: transparent;
+    border-color: var(--dnd-border);
+}

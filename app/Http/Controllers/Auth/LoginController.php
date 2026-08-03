@@ -25,6 +25,10 @@ class LoginController extends Controller
     public function store(Request $request){
         
      if(Auth::attempt($request->only(['username','password']))){
+         $user = Auth::user();
+         if ($user->agent_id) {
+             return redirect()->route('chat.index');
+         }
          return redirect('/home');
      }
 

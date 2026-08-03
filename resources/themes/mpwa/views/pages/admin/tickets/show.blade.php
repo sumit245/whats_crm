@@ -17,7 +17,7 @@
                         @else
                             <form action="{{ route('admin.tickets.reopen', $ticket) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-success">
+                                <button type="submit" class="btn btn-primary">
                                     {{ __('Reopen Ticket') }}
                                 </button>
                             </form>

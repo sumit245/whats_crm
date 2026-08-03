@@ -1,7 +1,6 @@
-<div class="tab-pane fade  " id="sendpoll" role="tabpanel">
     <h3>Send Poll  API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/send-poll</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/send-poll</code></p>
 
     <p>Request Body : (JSON If POST)
     <table class="table">
@@ -72,9 +71,8 @@
     <p> Example URL</p>
     <pre class="bg-dark text-white">
                            <code class="json">
-   {{ url('/') }}/send-button?sender=6281284838163&api_key=yourapikey&number=082298859671&name=what color do you like&button=red ,blue,yellow
+   {{ $baseUrl }}/send-button?sender=6281284838163&api_key=yourapikey&number=082298859671&name=what color do you like&button=red ,blue,yellow
    </code>
                        </pre>
 
 
-</div>

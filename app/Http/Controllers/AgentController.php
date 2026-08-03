@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AgentInvitationMail;
 use App\Models\Agent;
+use App\Models\AgentInvitation;
 use App\Models\Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AgentController extends Controller
 {
     public function index(Request $request)
     {
         $agents = Agent::where('user_id', $request->user()->id)
-            ->with('team')
+            ->with(['team', 'agentUser', 'invitations' => fn($q) => $q->whereNull('accepted_at')->where('expires_at', '>', now())])
             ->get();
         $teams  = Team::where('user_id', $request->user()->id)->get();
 
@@ -102,6 +106,36 @@ class AgentController extends Controller
     {
         Team::where('user_id', $request->user()->id)->findOrFail($id)->delete();
         return back()->with('success', __('Team deleted.'));
+    }
+
+    // ── Invite agent ──────────────────────────────────────────────────────
+
+    public function sendInvite(Request $request, $id)
+    {
+        $agent = Agent::where('user_id', $request->user()->id)->findOrFail($id);
+
+        if (!$agent->email) {
+            return back()->with('error', __('This agent has no email address. Add one before sending an invite.'));
+        }
+
+        if ($agent->agentUser()->exists()) {
+            return back()->with('error', __('This agent already has an active account.'));
+        }
+
+        // Invalidate any old pending invites
+        AgentInvitation::where('agent_id', $agent->id)->whereNull('accepted_at')->delete();
+
+        $invitation = AgentInvitation::create([
+            'agent_id'   => $agent->id,
+            'token'      => Str::random(64),
+            'expires_at' => now()->addDays(3),
+        ]);
+
+        $acceptUrl = route('agent.invite.show', $invitation->token);
+
+        Mail::to($agent->email)->send(new AgentInvitationMail($invitation, $acceptUrl));
+
+        return back()->with('success', __('Invitation sent to :email.', ['email' => $agent->email]));
     }
 
     // ── Agent status toggle (AJAX) ─────────────────────────────────────────

@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="sendvcard" role="tabpanel">
     <h3>Send VCard API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/send-vcard</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/send-vcard</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -62,9 +61,8 @@
     <p>Example URL Request</p>
     <pre class="bg-dark text-white">
         <code class="json">
-{{ url('/') }}/send-vcard?api_key=1234567890&sender=62888xxxx&number=62888xxxx&name=magd&phone=62822xxxx
+{{ $baseUrl }}/send-vcard?api_key=1234567890&sender=62888xxxx&number=62888xxxx&name=magd&phone=62822xxxx
         </code>
       </pre>
 
 
-</div>

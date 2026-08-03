@@ -6,10 +6,14 @@ use App\Jobs\DelayedFlowResumeJob;
 use App\Models\Blast;
 use App\Models\ChatbotFlow;
 use App\Models\ChatbotSession;
+use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\Device;
+use App\Models\Tag;
+use App\Models\FlowNodeEvent;
 use App\Models\WabaTemplate;
 use App\Services\Impl\MetaCloudApiService;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class FlowEngine
@@ -146,19 +150,31 @@ class FlowEngine
 
     private function processInput(string $value): bool
     {
-        $varName = $this->session->awaiting_variable;
+        $varName    = $this->session->awaiting_variable;
+        $validation = $this->session->awaiting_validation ?? null;
+
+        if ($validation && !$this->validateInput($value, $validation)) {
+            $hint = match ($validation) {
+                'email'  => __('Please enter a valid email address.'),
+                'phone'  => __('Please enter a valid phone number (digits only).'),
+                'number' => __('Please enter a number.'),
+                default  => __('Invalid input. Please try again.'),
+            };
+            $this->sendText($hint);
+            return true; // stay in awaiting_input state
+        }
 
         if ($varName) {
             $this->session->setVariable($varName, $value);
         }
 
-        // Find the next node after the ask_input node
         $nextNodeId = $this->getNextNodeId($this->session->current_node_id, 'output_1');
 
         $this->session->update([
-            'state'             => 'bot_active',
-            'awaiting_variable' => null,
-            'expires_at'        => null, // clear expiry when input received
+            'state'               => 'bot_active',
+            'awaiting_variable'   => null,
+            'awaiting_validation' => null,
+            'expires_at'          => null,
         ]);
 
         if (!$nextNodeId) {
@@ -167,6 +183,16 @@ class FlowEngine
         }
 
         return $this->executeFromNode($nextNodeId, $value);
+    }
+
+    private function validateInput(string $value, string $type): bool
+    {
+        return match ($type) {
+            'email'  => filter_var($value, FILTER_VALIDATE_EMAIL) !== false,
+            'phone'  => preg_match('/^\+?[\d\s\-]{7,15}$/', $value) === 1,
+            'number' => is_numeric($value),
+            default  => true,
+        };
     }
 
     // ── Node execution loop ─────────────────────────────────────────────────
@@ -192,6 +218,7 @@ class FlowEngine
             ]);
 
             $result = $this->executeNode($node, $nodeId, $inputText);
+            $this->recordNodeEvent($nodeId, $node['name'] ?? 'unknown');
             $nodeId = $result['next_node_id'] ?? null;
 
             $action = $result['action'] ?? '';
@@ -241,7 +268,12 @@ class FlowEngine
             'send_buttons'             => $this->nodeSendButtons($node, $nodeId, $data),
             'send_template'            => $this->nodeSendTemplate($node, $nodeId, $data),
             'ask_input'                => $this->nodeAskInput($node, $nodeId, $data),
+            'api_call'                 => $this->nodeApiCall($node, $nodeId, $data),
+            'add_tag'                  => $this->nodeAddTag($node, $nodeId, $data),
+            'remove_tag'               => $this->nodeRemoveTag($node, $nodeId, $data),
+            'send_catalog'             => $this->nodeSendCatalog($node, $nodeId, $data),
             'condition'                => $this->nodeCondition($node, $nodeId, $data, $inputText),
+            'random_split'             => $this->nodeRandomSplit($node, $nodeId, $data),
             'delay'                    => $this->nodeDelay($node, $nodeId, $data),
             'human_handoff'            => $this->nodeHumanHandoff($node, $nodeId, $data),
             'end_flow'                 => $this->nodeEndFlow(),
@@ -307,20 +339,106 @@ class FlowEngine
         return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];
     }
 
+    private function nodeApiCall(array $node, string $nodeId, array $data): array
+    {
+        $method = strtolower($data['method'] ?? 'post');
+        $url    = $this->session->resolveVariables($data['url'] ?? '');
+        $body   = $this->session->resolveVariables($data['body'] ?? '');
+        $saveAs = trim($data['save_as'] ?? 'api_response');
+
+        if (!$url) {
+            return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_2')];
+        }
+
+        try {
+            $parsed   = json_decode($body, true);
+            $response = Http::timeout(10)->{$method}($url, $parsed ?? ($body ? ['raw' => $body] : []));
+
+            if ($response->successful()) {
+                if ($saveAs) {
+                    $result = $response->json();
+                    $this->session->setVariable($saveAs, is_array($result) ? json_encode($result) : (string) $response->body());
+                }
+                return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];
+            }
+
+            Log::warning("FlowEngine: api_call got {$response->status()} from {$url}");
+            return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_2')];
+        } catch (\Throwable $e) {
+            Log::warning("FlowEngine: api_call exception: " . $e->getMessage());
+            return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_2')];
+        }
+    }
+
+    private function nodeAddTag(array $node, string $nodeId, array $data): array
+    {
+        $tagName = trim($data['tag'] ?? '');
+        if ($tagName) {
+            $tag = Tag::firstOrCreate(
+                ['user_id' => $this->conversation->user_id, 'name' => $tagName]
+            );
+            Contact::firstOrCreate(
+                ['user_id' => $this->conversation->user_id, 'number' => $this->conversation->contact_number, 'tag_id' => $tag->id],
+                ['name' => $this->conversation->contact_name ?? $this->conversation->contact_number]
+            );
+        }
+        return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];
+    }
+
+    private function nodeRemoveTag(array $node, string $nodeId, array $data): array
+    {
+        $tagName = trim($data['tag'] ?? '');
+        if ($tagName) {
+            $tag = Tag::where('user_id', $this->conversation->user_id)->where('name', $tagName)->first();
+            if ($tag) {
+                Contact::where('user_id', $this->conversation->user_id)
+                    ->where('number', $this->conversation->contact_number)
+                    ->where('tag_id', $tag->id)
+                    ->delete();
+            }
+        }
+        return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];
+    }
+
+    private function nodeSendCatalog(array $node, string $nodeId, array $data): array
+    {
+        $catalogId = trim($data['catalog_id'] ?? '');
+        $body      = $this->session->resolveVariables($data['body'] ?? '');
+        $footer    = trim($data['footer'] ?? '');
+
+        if ($catalogId) {
+            try {
+                $this->api->sendCatalog($this->conversation->contact_number, $catalogId, $body, $footer);
+            } catch (\Throwable $e) {
+                Log::warning("FlowEngine: sendCatalog failed: " . $e->getMessage());
+            }
+        }
+
+        return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];
+    }
+
+    private function nodeRandomSplit(array $node, string $nodeId, array $data): array
+    {
+        $weightA   = max(1, min(99, (int) ($data['weight_a'] ?? 50)));
+        $outputKey = random_int(1, 100) <= $weightA ? 'output_1' : 'output_2';
+        return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, $outputKey)];
+    }
+
     private function nodeAskInput(array $node, string $nodeId, array $data): array
     {
-        $question = $this->session->resolveVariables($data['question'] ?? '');
-        $varName  = $data['variable'] ?? 'input';
+        $question   = $this->session->resolveVariables($data['question'] ?? '');
+        $varName    = $data['variable'] ?? 'input';
+        $validation = $data['validation'] ?? 'none';
 
         if ($question) {
             $this->sendText($question);
         }
 
-        // Phase C: set expiry when entering awaiting_input state
         $this->session->update([
             'state'             => 'awaiting_input',
             'current_node_id'   => $nodeId,
             'awaiting_variable' => $varName,
+            'awaiting_validation' => $validation !== 'none' ? $validation : null,
             'expires_at'        => now()->addHours(self::SESSION_TTL_HOURS),
         ]);
 
@@ -469,6 +587,28 @@ class FlowEngine
             'last_executed_at' => now(),
             'expires_at'       => null,
         ]);
+
+        $nodeId = $this->session->current_node_id;
+        if ($nodeId) {
+            $nodes     = $this->session->flow?->getNodes() ?? [];
+            $nodeType  = $nodes[$nodeId]['name'] ?? 'unknown';
+            $this->recordNodeEvent($nodeId, $nodeType, 'completed');
+        }
+    }
+
+    private function recordNodeEvent(string $nodeId, string $nodeType, string $eventType = 'entered'): void
+    {
+        try {
+            FlowNodeEvent::create([
+                'flow_id'    => $this->session->flow_id,
+                'session_id' => $this->session->id,
+                'node_id'    => $nodeId,
+                'node_type'  => $nodeType,
+                'event_type' => $eventType,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning("FlowEngine: could not record node event: " . $e->getMessage());
+        }
     }
 
     /**

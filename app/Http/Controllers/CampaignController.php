@@ -106,6 +106,7 @@ class CampaignController extends Controller
             $blasts = [];
             foreach ($contacts as $contact) {
                 if ($template) {
+                    // Body variables: var_source_1 / var_static_1 …
                     $vars = [];
                     $i = 1;
                     while ($request->has("var_source_{$i}")) {
@@ -116,6 +117,23 @@ class CampaignController extends Controller
                             default  => $request->input("var_static_{$i}", ''),
                         };
                         $i++;
+                    }
+
+                    // Header media URL (same for every contact)
+                    if ($request->filled('header_url')) {
+                        $vars['header_url']  = $request->input('header_url');
+                        $vars['header_type'] = $request->input('header_type', 'image');
+                    }
+
+                    // URL button suffixes — support {name} / {number} substitution
+                    foreach ($request->all() as $key => $val) {
+                        if (preg_match('/^button_(\d+)_url_suffix$/', $key) && $val !== '') {
+                            $vars[$key] = str_replace(
+                                ['{name}', '{number}'],
+                                [$contact->name ?? '', $contact->number ?? ''],
+                                $val
+                            );
+                        }
                     }
 
                     $blasts[] = [

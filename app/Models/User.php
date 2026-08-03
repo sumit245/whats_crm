@@ -29,6 +29,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'agent_id',
         'username',
         'email',
         'password',
@@ -122,6 +123,16 @@ class User extends Authenticatable
     public function chatbotFlows()
     {
         return $this->hasMany(\App\Models\ChatbotFlow::class);
+    }
+
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class);
+    }
+
+    public function isAgent(): bool
+    {
+        return (bool) $this->agent_id;
     }
 
     // get expired subscription

@@ -1,7 +1,6 @@
-  <div class="tab-pane fade  " id="sendmedia" role="tabpanel">
       <h3>Send Media API</h3>
       <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-      <p>Endpoint: <code>{{ url('/') }}/send-media</code></p>
+      <p>Endpoint: <code>{{ $baseUrl }}/send-media</code></p>
 
       <p>Request Body : (JSON If POST)
       <table class="table">
@@ -81,7 +80,6 @@
       <p>Example URL Request</p>
       <pre class="bg-dark text-white">
           <code class="json">
-  {{ url('/') }}/send-media?api_key=1234567890&sender=62888xxxx&number=62888xxxx&media_type=image&caption=Hello World&footer=Sent via DnD Connect&url=https://example.com/image.jpg
+  {{ $baseUrl }}/send-media?api_key=1234567890&sender=62888xxxx&number=62888xxxx&media_type=image&caption=Hello World&footer=Sent via DnD Connect&url=https://example.com/image.jpg
           </code>
         </pre>
-  </div>

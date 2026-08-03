@@ -12,20 +12,7 @@
                     @slot('msg',session('alert')['msg'])
                 </x-alert>
              @endif
-             @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul> 
-    </div>
-@endif
-               
-           
-                
-    
-<div class="row mt-4">
+             <div class="row mt-4">
   <div class="col">
       <div class="card">
           <div class="card-header d-flex justify-content-between">
@@ -65,7 +52,7 @@
                          <td><span class="badge badge-{{$schedule->is_executed === 1 ? 'success' : 'danger'}}">{{$schedule->is_executed === 1 ? 'Executed' : 'Waiting' }}</span></td>
                          {{-- <td>
                              <div class="d-flex justify-content-center">
-                                 <button class="btn btn-success btn-sm mx-3">{{__('Add to Tag')}}</button>
+                                 <button class="btn btn-primary btn-sm mx-3">{{__('Add to Tag')}}</button>
                                  <form action="{{route('contactDeleteOne',$contact->id)}}" method="POST">
                                   @method('delete')
                                   @csrf
@@ -87,20 +74,10 @@
 
 </div>
 
-
-
-
-
-
     <script src="{{asset('js/pages/datatables.js')}}"></script>
     <script src="{{asset('js/pages/select2.js')}}"></script>
     <script src="{{asset('plugins/datatables/datatables.min.js')}}"></script>
     <script src="{{asset('plugins/select2/js/select2.full.min.js')}}"></script>
   <script src="{{asset('js/autoreply.js')}}"></script>
 </x-layout-dashboard>
-
-
-
-
-
 

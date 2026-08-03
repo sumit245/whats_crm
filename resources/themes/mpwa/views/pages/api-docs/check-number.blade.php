@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="checknumber" role="tabpanel">
     <h3>Check Number API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/check-number</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/check-number</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -50,9 +49,8 @@
     <p>Example URL Request</p>
     <pre class="bg-dark text-white">
         <code class="json">
-{{ url('/') }}/check-number?api_key=1234567890&sender=6281222xxxxx&number=6281222xxxxx
+{{ $baseUrl }}/check-number?api_key=1234567890&sender=6281222xxxxx&number=6281222xxxxx
         </code>
       </pre>
 
 
-</div>

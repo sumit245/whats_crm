@@ -20,6 +20,12 @@ class RestapiController extends Controller
      */
     public function __invoke(Request $request)
     {
-        return view('theme::pages.api-docs.index');
+        $user    = auth()->user();
+        $device  = $user->devices()->first();
+        $apiKey  = $user->api_key;
+        $sender  = $device?->body ?? 'YOUR_DEVICE_NAME';
+        $baseUrl = rtrim(url('/'), '/') . '/' . app()->getLocale();
+
+        return view('theme::pages.api-docs.index', compact('apiKey', 'sender', 'baseUrl', 'device'));
     }
 }

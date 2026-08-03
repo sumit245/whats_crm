@@ -15,6 +15,7 @@ use Illuminate\Http\Response;
 use App\Models\User;
 use App\Models\Device;
 use App\Repositories\DeviceRepository;
+use App\Services\Impl\MetaCloudApiService;
 use App\Services\WhatsappService;
 use App\Utils\CacheKey;
 use Illuminate\Support\Facades\Cache;
@@ -25,7 +26,6 @@ use Carbon\Carbon;
 
 class ApiController extends Controller
 {
-    protected WhatsappService $wa;
     protected DeviceRepository $deviceRepository;
     protected $extendedDataNeeded = [
         'text' => ['message', 'number'],
@@ -40,13 +40,17 @@ class ApiController extends Controller
     ];
 
     protected $allowedMediaType = ['image', 'video', 'audio', 'document'];
-    public function __construct(WhatsappService $wa, DeviceRepository $deviceRepository)
+    public function __construct(DeviceRepository $deviceRepository)
     {
 		$this->RESPON_SUCCESS = __("Message sent successfully!");
 		$this->RESPON_FAILED = __("Failed to send message!, Check your connection!");
 		$this->RESPON_INVALID_PARAMS = __("Invalid parameters, please check your input!");
-        $this->wa = $wa;
         $this->deviceRepository = $deviceRepository;
+    }
+
+    private function waFor(Request $request): MetaCloudApiService
+    {
+        return new MetaCloudApiService($request->device);
     }
 
     private function getUniqueReceivers($request)
@@ -75,17 +79,20 @@ class ApiController extends Controller
 
     private function createDataForBatchInput($request, $number, $messageSent)
     {
+        $sent = (bool) $messageSent->status;
         return [
-            'user_id' => $request->user->id,
-            'device_id' => $request->device->id,
-            'number' => $number,
-            'message' => $request->message ? $request->message : ($request->caption ? $request->caption : ''),
-            'payload' => json_encode($request->all()),
-            'status' => $messageSent->status ? 'success' : 'failed',
-            'type' => $request->type,
-            'send_by' => 'api',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'user_id'         => $request->user->id,
+            'device_id'       => $request->device->id,
+            'number'          => $number,
+            'message'         => $request->message ? $request->message : ($request->caption ? $request->caption : ''),
+            'payload'         => json_encode($request->all()),
+            'status'          => $sent ? 'success' : 'failed',
+            'meta_message_id' => $messageSent->message_id ?? null,
+            'delivery_status' => $sent ? 'sent' : 'failed',
+            'type'            => $request->type,
+            'send_by'         => 'api',
+            'created_at'      => now(),
+            'updated_at'      => now(),
         ];
     }
 
@@ -126,7 +133,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendText($request, $number);
+				$sendMessage = $this->waFor($request)->sendText($request, $number);
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 				$success = $sendMessage->status ? $success + 1 : $success;
 			}
@@ -176,7 +183,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendLocation($request, $number);
+				$sendMessage = $this->waFor($request)->sendLocation($request, $number);
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 				$success = $sendMessage->status ? $success + 1 : $success;
 			}
@@ -225,7 +232,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendVcard($request, $number);
+				$sendMessage = $this->waFor($request)->sendVcard($request, $number);
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 				$success = $sendMessage->status ? $success + 1 : $success;
 			}
@@ -275,7 +282,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendMedia($request, $number);
+				$sendMessage = $this->waFor($request)->sendMedia($request, $number);
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 				$success = $sendMessage->status ? $success + 1 : $success;
 			}
@@ -323,7 +330,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendSticker($request, $number);
+				$sendMessage = $this->waFor($request)->sendSticker($request, $number);
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 				$success = $sendMessage->status ? $success + 1 : $success;
 			}
@@ -373,7 +380,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendButton($request, $number);
+				$sendMessage = $this->waFor($request)->sendButton($request, $number);
 				$success = $sendMessage->status ? $success + 1 : $success;
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 			}
@@ -435,7 +442,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendTemplate($request, $number);
+				$sendMessage = $this->waFor($request)->sendTemplate($request, $number);
 				$success = $sendMessage->status ? $success + 1 : $success;
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 			}
@@ -486,7 +493,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendList($request, $number);
+				$sendMessage = $this->waFor($request)->sendList($request, $number);
 				$success = $sendMessage->status ? $success + 1 : $success;
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 			}
@@ -536,7 +543,7 @@ class ApiController extends Controller
 
 		try {
 			foreach ($receivers as $number) {
-				$sendMessage = $this->wa->sendPoll($request, $number);
+				$sendMessage = $this->waFor($request)->sendPoll($request, $number);
 				$success = $sendMessage->status ? $success + 1 : $success;
 				$prepareHistoryMessage[] = $this->createDataForBatchInput($request, $number, $sendMessage);
 			}

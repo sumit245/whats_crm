@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="createuser" role="tabpanel">
     <h3>Create User API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/create-user</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/create-user</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -69,9 +68,8 @@
     <p>Example URL Request</p>
     <pre class="bg-dark text-white">
         <code class="json">
-{{ url('/') }}/create-user?api_key=1234567890&username=magd&password=12345678&email=ttmttxx@xx.com&expire=30&limit_device=10
+{{ $baseUrl }}/create-user?api_key=1234567890&username=magd&password=12345678&email=ttmttxx@xx.com&expire=30&limit_device=10
         </code>
       </pre>
 
 
-</div>

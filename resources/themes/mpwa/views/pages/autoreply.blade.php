@@ -41,15 +41,6 @@
 			<i class="bi bi-plus-lg"></i> {{__('New Auto Reply')}}
 		</button>
 	</x-page-header>
-	@if ($errors->any())
-	<div class="alert alert-danger">
-		<ul>
-			@foreach ($errors->all() as $error)
-			<li>{{ $error }}</li>
-			@endforeach
-		</ul>
-	</div>
-	@endif
 	{{--  --}}
 	<div class="card">
 		<div class="card-body">

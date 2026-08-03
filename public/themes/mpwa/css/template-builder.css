@@ -1,0 +1,240 @@
+/* Template builder layout — colors/spacing from dnd-tokens via .wa-tpl in dnd-pages.css */
+
+.wa-tpl__frame {
+    background: var(--dnd-surface);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    overflow: hidden;
+}
+
+/* Stepper, split layout, forms — structural only; tokens applied in dnd-pages.css */
+/* Structural rules — colors via dnd-tokens + dnd-pages .wa-tpl */
+.wa-tpl__stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: var(--dnd-space-lg) var(--dnd-gutter) var(--dnd-space-sm);
+    border-bottom: var(--dnd-border-width) solid var(--dnd-border);
+    background: var(--dnd-surface);
+}
+
+.wa-tpl__step {
+    display: flex;
+    align-items: center;
+    gap: var(--dnd-space-sm);
+    padding: 0 var(--dnd-space-lg);
+    position: relative;
+    color: var(--dnd-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.wa-tpl__step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: -1.25rem;
+    top: 50%;
+    width: 1.5rem;
+    height: 1px;
+    background: var(--dnd-border);
+    transform: translateY(-50%);
+}
+
+.wa-tpl__step.is-done:not(:last-child)::after {
+    background: var(--dnd-brand);
+}
+
+.wa-tpl__step-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--dnd-radius-pill);
+    border: var(--dnd-border-width) solid var(--dnd-border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    background: var(--dnd-surface);
+}
+
+.wa-tpl__split {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 400px;
+}
+
+@media (min-width: 992px) {
+    .wa-tpl__split {
+        grid-template-columns: minmax(0, 1fr) 300px;
+    }
+}
+
+.wa-tpl__main {
+    padding: var(--dnd-gutter);
+    background: var(--dnd-bg);
+}
+
+.wa-tpl__aside {
+    padding: var(--dnd-gutter);
+    background: var(--dnd-surface);
+    border-top: var(--dnd-border-width) solid var(--dnd-border);
+}
+
+@media (min-width: 992px) {
+    .wa-tpl__aside {
+        border-top: none;
+        border-left: var(--dnd-border-width) solid var(--dnd-border);
+    }
+}
+
+.wa-tpl-pane {
+    display: none;
+}
+
+.wa-tpl-pane.is-active {
+    display: contents;
+}
+
+.wa-tpl__h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 var(--dnd-space-lg);
+    color: var(--dnd-text);
+}
+
+.wa-cat-tabs {
+    display: flex;
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    overflow: hidden;
+    margin-bottom: var(--dnd-space-lg);
+    background: var(--dnd-surface);
+}
+
+.wa-cat-tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: var(--dnd-space-md) var(--dnd-space-sm);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--dnd-text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--dnd-space-xs);
+    cursor: pointer;
+}
+
+.wa-cat-tab:not(:last-child) {
+    border-right: var(--dnd-border-width) solid var(--dnd-border);
+}
+
+.wa-type-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--dnd-surface);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    overflow: hidden;
+}
+
+.wa-type-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--dnd-space-md);
+    padding: var(--dnd-space-md) var(--dnd-space-lg);
+    cursor: pointer;
+    border-bottom: var(--dnd-border-width) solid var(--dnd-border);
+    margin: 0;
+}
+
+.wa-type-item:last-child {
+    border-bottom: none;
+}
+
+.wa-type-item__title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin: 0;
+    color: var(--dnd-text);
+}
+
+.wa-type-item__desc {
+    font-size: 0.8125rem;
+    color: var(--dnd-text-muted);
+    margin: 0.15rem 0 0;
+    line-height: 1.4;
+}
+
+.wa-preview-device {
+    background: var(--dnd-chat-thread);
+    border-radius: var(--dnd-radius-md);
+    padding: var(--dnd-gutter);
+    min-height: 240px;
+}
+
+.wa-preview-bubble {
+    background: var(--dnd-surface);
+    border-radius: var(--dnd-radius-md);
+    box-shadow: var(--dnd-shadow-sm);
+    overflow: hidden;
+    color: var(--dnd-text);
+}
+
+.wa-preview-bubble__body {
+    padding: var(--dnd-space-sm) var(--dnd-space-md);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+.wa-preview-bubble__cta {
+    border-top: var(--dnd-border-width) solid var(--dnd-border);
+    text-align: center;
+    padding: var(--dnd-space-sm);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.wa-form-card {
+    background: var(--dnd-surface);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    padding: var(--dnd-space-lg);
+    margin-bottom: var(--dnd-stack);
+}
+
+.wa-body-wrap {
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    overflow: hidden;
+}
+
+.wa-body-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem;
+    padding: var(--dnd-space-xs) var(--dnd-space-sm);
+    border-bottom: var(--dnd-border-width) solid var(--dnd-border);
+    background: var(--dnd-brand-subtle);
+}
+
+.wa-tpl__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--dnd-space-md) var(--dnd-gutter);
+    border-top: var(--dnd-border-width) solid var(--dnd-border);
+    background: var(--dnd-surface);
+}
+
+.wa-review-json {
+    font-size: 0.75rem;
+    max-height: 280px;
+    overflow: auto;
+    background: var(--dnd-bg);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    padding: var(--dnd-space-md);
+}

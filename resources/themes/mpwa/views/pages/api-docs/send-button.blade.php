@@ -1,7 +1,6 @@
- <div class="tab-pane fade  " id="sendbutton" role="tabpanel">
      <h3>Send Button API</h3>
      <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-     <p>Endpoint: <code>{{ url('/') }}/send-button</code></p>
+     <p>Endpoint: <code>{{ $baseUrl }}/send-button</code></p>
 
      <p>Request Body : (JSON If POST)
      <table class="table">
@@ -77,9 +76,8 @@
      <p> Example URL</p>
      <pre class="bg-dark text-white">
                             <code class="json">
-    {{ url('/') }}/send-button?sender=6281284838163&api_key=yourapikey&number=082298859671&url=&footer=optional&message=Halo,ini pesan button&button=button 1,button 2,button 3 
+    {{ $baseUrl }}/send-button?sender=6281284838163&api_key=yourapikey&number=082298859671&url=&footer=optional&message=Halo,ini pesan button&button=button 1,button 2,button 3 
     </code>
                         </pre>
 
 
- </div>

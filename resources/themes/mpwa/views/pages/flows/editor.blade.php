@@ -114,7 +114,7 @@
     <div class="flow-topbar">
         <div class="flow-topbar-row1">
             <a href="{{ route('flows.index') }}" class="flow-back-btn" title="{{ __('Back to flows') }}">
-                <i class="material-icons" style="font-size:18px">arrow_back</i>
+                <i class="bi bi-arrow-left" style="font-size:16px"></i>
             </a>
             <input type="text" id="flow-name" class="flow-name-input"
                    placeholder="{{ __('Untitled flow') }}"
@@ -132,12 +132,12 @@
             <div class="ms-auto d-flex gap-2 align-items-center">
                 @isset($flow)
                 <button id="btn-toggle" class="btn-toggle-status {{ $flow->status === 'active' ? 'is-active' : 'is-draft' }}" data-status="{{ $flow->status }}">
-                    <i class="material-icons" style="font-size:14px">{{ $flow->status === 'active' ? 'pause_circle' : 'play_circle' }}</i>
+                    <i class="bi {{ $flow->status === 'active' ? 'bi-pause-circle-fill' : 'bi-play-circle-fill' }}"></i>
                     {{ $flow->status === 'active' ? __('Active') : __('Draft') }}
                 </button>
                 @endisset
                 <button id="btn-save" class="btn-save">
-                    <i class="material-icons" style="font-size:15px">save</i> {{ __('Save') }}
+                    <i class="bi bi-floppy-fill"></i> {{ __('Save') }}
                 </button>
             </div>
         </div>
@@ -163,7 +163,7 @@
                    placeholder="{{ __('Message when bot cannot understand...') }}"
                    value="{{ $flow->fallback_message ?? '' }}">
             <span class="topbar-label" style="color:#94a3b8;font-size:0.68rem">
-                <i class="material-icons" style="font-size:11px;vertical-align:-1px">info</i>
+                <i class="bi bi-info-circle" style="font-size:11px;vertical-align:-1px"></i>
                 {{ __('Sent after 2 failed matches. Escalates to human after 3.') }}
             </span>
         </div>
@@ -177,52 +177,70 @@
             <div class="palette-group">
                 <div class="palette-group-label">{{ __('Triggers') }}</div>
                 <div class="node-palette-item" draggable="true" data-node="trigger_keyword">
-                    <div class="ni nc-trigger"><i class="material-icons" style="font-size:13px">flash_on</i></div> {{ __('Keyword') }}
+                    <div class="ni nc-trigger"><i class="bi bi-lightning-fill"></i></div> {{ __('Keyword') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="trigger_all">
-                    <div class="ni nc-trigger"><i class="material-icons" style="font-size:13px">all_inclusive</i></div> {{ __('All messages') }}
+                    <div class="ni nc-trigger"><i class="bi bi-infinity"></i></div> {{ __('All messages') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="trigger_referral">
-                    <div class="ni nc-trigger"><i class="material-icons" style="font-size:13px">ads_click</i></div> {{ __('Ad click') }}
+                    <div class="ni nc-trigger"><i class="bi bi-cursor-fill"></i></div> {{ __('Ad click') }}
+                </div>
+                <div class="node-palette-item" draggable="true" data-node="trigger_api">
+                    <div class="ni nc-trigger"><i class="bi bi-link-45deg"></i></div> {{ __('API webhook') }}
                 </div>
             </div>
 
             <div class="palette-group">
                 <div class="palette-group-label">{{ __('Actions') }}</div>
                 <div class="node-palette-item" draggable="true" data-node="send_text">
-                    <div class="ni nc-action"><i class="material-icons" style="font-size:13px">chat</i></div> {{ __('Send text') }}
+                    <div class="ni nc-action"><i class="bi bi-chat-fill"></i></div> {{ __('Send text') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="send_image">
-                    <div class="ni nc-action"><i class="material-icons" style="font-size:13px">image</i></div> {{ __('Send image') }}
+                    <div class="ni nc-action"><i class="bi bi-image-fill"></i></div> {{ __('Send image') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="send_buttons">
-                    <div class="ni nc-action"><i class="material-icons" style="font-size:13px">touch_app</i></div> {{ __('Send buttons') }}
-            </div>
+                    <div class="ni nc-action"><i class="bi bi-hand-index-fill"></i></div> {{ __('Send buttons') }}
+                </div>
                 <div class="node-palette-item" draggable="true" data-node="send_template">
-                    <div class="ni nc-action"><i class="material-icons" style="font-size:13px">description</i></div> {{ __('Send template') }}
+                    <div class="ni nc-action"><i class="bi bi-file-text-fill"></i></div> {{ __('Send template') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="ask_input">
-                    <div class="ni nc-action"><i class="material-icons" style="font-size:13px">input</i></div> {{ __('Ask for input') }}
+                    <div class="ni nc-action"><i class="bi bi-keyboard-fill"></i></div> {{ __('Ask for input') }}
+                </div>
+                <div class="node-palette-item" draggable="true" data-node="api_call">
+                    <div class="ni nc-action"><i class="bi bi-globe2"></i></div> {{ __('API call') }}
+                </div>
+                <div class="node-palette-item" draggable="true" data-node="add_tag">
+                    <div class="ni nc-action"><i class="bi bi-tag-fill"></i></div> {{ __('Add tag') }}
+                </div>
+                <div class="node-palette-item" draggable="true" data-node="remove_tag">
+                    <div class="ni nc-action"><i class="bi bi-tag"></i></div> {{ __('Remove tag') }}
+                </div>
+                <div class="node-palette-item" draggable="true" data-node="send_catalog">
+                    <div class="ni nc-action"><i class="bi bi-bag-fill"></i></div> {{ __('Send catalog') }}
                 </div>
             </div>
 
             <div class="palette-group">
                 <div class="palette-group-label">{{ __('Logic') }}</div>
                 <div class="node-palette-item" draggable="true" data-node="condition">
-                    <div class="ni nc-logic"><i class="material-icons" style="font-size:13px">call_split</i></div> {{ __('Condition') }}
+                    <div class="ni nc-logic"><i class="bi bi-signpost-split-fill"></i></div> {{ __('Condition') }}
+                </div>
+                <div class="node-palette-item" draggable="true" data-node="random_split">
+                    <div class="ni nc-logic"><i class="bi bi-shuffle"></i></div> {{ __('Random split') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="delay">
-                    <div class="ni nc-logic"><i class="material-icons" style="font-size:13px">timer</i></div> {{ __('Delay') }}
+                    <div class="ni nc-logic"><i class="bi bi-clock-fill"></i></div> {{ __('Delay') }}
                 </div>
             </div>
 
             <div class="palette-group">
                 <div class="palette-group-label">{{ __('Control') }}</div>
                 <div class="node-palette-item" draggable="true" data-node="human_handoff">
-                    <div class="ni nc-control"><i class="material-icons" style="font-size:13px">support_agent</i></div> {{ __('Human handoff') }}
+                    <div class="ni nc-control"><i class="bi bi-headset"></i></div> {{ __('Human handoff') }}
                 </div>
                 <div class="node-palette-item" draggable="true" data-node="end_flow">
-                    <div class="ni nc-control"><i class="material-icons" style="font-size:13px">stop_circle</i></div> {{ __('End flow') }}
+                    <div class="ni nc-control"><i class="bi bi-stop-circle-fill"></i></div> {{ __('End flow') }}
                 </div>
             </div>
 
@@ -241,14 +259,14 @@
         <div class="flow-canvas" id="canvas-wrap">
             <div class="flow-canvas-bg"></div>
             <div class="flow-toolbar">
-                <button class="flow-toolbar-btn" id="btn-zoom-in" title="{{ __('Zoom in') }}"><i class="material-icons">zoom_in</i></button>
-                <button class="flow-toolbar-btn" id="btn-zoom-out" title="{{ __('Zoom out') }}"><i class="material-icons">zoom_out</i></button>
-                <button class="flow-toolbar-btn" id="btn-zoom-reset" title="{{ __('Fit to screen') }}"><i class="material-icons">center_focus_strong</i></button>
-                <button class="flow-toolbar-btn" id="btn-clear" title="{{ __('Clear canvas') }}" style="color:#ef4444"><i class="material-icons">delete_sweep</i></button>
+                <button class="flow-toolbar-btn" id="btn-zoom-in" title="{{ __('Zoom in') }}"><i class="bi bi-zoom-in"></i></button>
+                <button class="flow-toolbar-btn" id="btn-zoom-out" title="{{ __('Zoom out') }}"><i class="bi bi-zoom-out"></i></button>
+                <button class="flow-toolbar-btn" id="btn-zoom-reset" title="{{ __('Fit to screen') }}"><i class="bi bi-arrows-fullscreen"></i></button>
+                <button class="flow-toolbar-btn" id="btn-clear" title="{{ __('Clear canvas') }}" style="color:#ef4444"><i class="bi bi-trash-fill"></i></button>
             </div>
             <div id="drawflow"></div>
             <div class="flow-help-hint">
-                <i class="material-icons" style="font-size:11px;vertical-align:-1px">mouse</i>
+                <i class="bi bi-mouse" style="font-size:11px;vertical-align:-1px"></i>
                 {{ __('Scroll to zoom · Drag to pan') }}
             </div>
         </div>
@@ -258,7 +276,7 @@
             <div class="config-panel-header">
                 <span class="config-panel-title" id="config-panel-title">{{ __('Node settings') }}</span>
                 <button class="config-close-btn" id="config-panel-close" title="{{ __('Close') }}">
-                    <i class="material-icons" style="font-size:18px">close</i>
+                    <i class="bi bi-x-lg" style="font-size:16px"></i>
                 </button>
             </div>
             <div class="config-panel-body" id="config-panel-body">
@@ -273,50 +291,59 @@
 (function () {
 'use strict';
 
-const CSRF      = document.querySelector('meta[name="csrf-token"]').content;
-const FLOW_ID   = {{ isset($flow) ? $flow->id : 'null' }};
-const TEMPLATES = @json($templates);
+const CSRF       = document.querySelector('meta[name="csrf-token"]').content;
+const FLOW_ID    = {{ isset($flow) ? $flow->id : 'null' }};
+const STORE_URL  = "{{ route('flows.store') }}";
+const UPDATE_URL = "{{ isset($flow) ? route('flows.update', $flow->id) : '' }}";
+const TOGGLE_URL = "{{ isset($flow) ? route('flows.toggle', $flow->id) : '' }}";
+const TEMPLATES  = @json($templates);
 
 // ── Node definitions ─────────────────────────────────────────────
 const NODE_DEFS = {
     trigger_keyword: {
-        label: '{{ __('Keyword trigger') }}', cat: 'trigger', icon: 'flash_on',
+        label: '{{ __('Keyword trigger') }}', cat: 'trigger', icon: 'bi-lightning-fill',
         inputs: 0, outputs: 1,
         defaultData: { keyword: '', match_type: 'contains' },
         preview: d => `<strong>${d.keyword || 'keyword...'}</strong>`,
     },
     trigger_all: {
-        label: 'All Messages', cat: 'trigger', icon: 'all_inclusive',
+        label: 'All Messages', cat: 'trigger', icon: 'bi-infinity',
         inputs: 0, outputs: 1,
         defaultData: {},
         preview: () => 'Catches every message',
     },
     trigger_referral: {
-        label: 'Ad Click', cat: 'trigger', icon: 'ads_click',
+        label: 'Ad Click', cat: 'trigger', icon: 'bi-cursor-fill',
         inputs: 0, outputs: 1,
         defaultData: { ref_id: '' },
         preview: d => `Ref: <strong>${d.ref_id || '—'}</strong>`,
     },
+    trigger_api: {
+        label: 'API Webhook', cat: 'trigger', icon: 'bi-link-45deg',
+        inputs: 0, outputs: 1,
+        defaultData: {},
+        preview: () => 'Triggered via API endpoint',
+    },
     send_text: {
-        label: 'Send Text', cat: 'action', icon: 'chat',
+        label: 'Send Text', cat: 'action', icon: 'bi-chat-fill',
         inputs: 1, outputs: 1,
         defaultData: { message: '' },
         preview: d => d.message ? `"${d.message.slice(0,40)}"` : '<em>empty message</em>',
     },
     send_image: {
-        label: 'Send Image', cat: 'action', icon: 'image',
+        label: 'Send Image', cat: 'action', icon: 'bi-image-fill',
         inputs: 1, outputs: 1,
         defaultData: { url: '', caption: '' },
         preview: d => d.url ? `<strong>Image</strong>: ${d.caption || ''}` : '<em>no URL</em>',
     },
     send_buttons: {
-        label: 'Send Buttons', cat: 'action', icon: 'touch_app',
+        label: 'Send Buttons', cat: 'action', icon: 'bi-hand-index-fill',
         inputs: 1, outputs: 1,
         defaultData: { message: '', buttons: '' },
         preview: d => d.message ? `"${d.message.slice(0,30)}"` : '<em>empty</em>',
     },
     send_template: {
-        label: 'Send Template', cat: 'action', icon: 'description',
+        label: 'Send Template', cat: 'action', icon: 'bi-file-text-fill',
         inputs: 1, outputs: 1,
         defaultData: { template_id: '' },
         preview: d => {
@@ -325,32 +352,64 @@ const NODE_DEFS = {
         },
     },
     ask_input: {
-        label: 'Ask for Input', cat: 'action', icon: 'input',
+        label: 'Ask for Input', cat: 'action', icon: 'bi-keyboard-fill',
         inputs: 1, outputs: 1,
-        defaultData: { question: '', variable: 'user_input' },
+        defaultData: { question: '', variable: 'user_input', validation: 'none' },
         preview: d => d.question ? `"${d.question.slice(0,35)}"` : '<em>empty question</em>',
     },
+    api_call: {
+        label: 'API Call', cat: 'action', icon: 'bi-globe2',
+        inputs: 1, outputs: 2,
+        defaultData: { method: 'POST', url: '', body: '', save_as: 'api_response' },
+        preview: d => `<strong>${d.method||'POST'}</strong> ${d.url ? d.url.slice(0,28) : '<em>no URL</em>'}`,
+        outputLabels: ['Success', 'Error'],
+    },
+    add_tag: {
+        label: 'Add Tag', cat: 'action', icon: 'bi-tag-fill',
+        inputs: 1, outputs: 1,
+        defaultData: { tag: '' },
+        preview: d => d.tag ? `+<strong>${d.tag}</strong>` : '<em>no tag set</em>',
+    },
+    remove_tag: {
+        label: 'Remove Tag', cat: 'action', icon: 'bi-tag',
+        inputs: 1, outputs: 1,
+        defaultData: { tag: '' },
+        preview: d => d.tag ? `−<strong>${d.tag}</strong>` : '<em>no tag set</em>',
+    },
+    send_catalog: {
+        label: 'Send Catalog', cat: 'action', icon: 'bi-bag-fill',
+        inputs: 1, outputs: 1,
+        defaultData: { catalog_id: '', body: '', footer: '' },
+        preview: d => d.catalog_id ? `Catalog: <strong>${d.catalog_id}</strong>` : '<em>no catalog ID</em>',
+    },
     condition: {
-        label: 'Condition (IF)', cat: 'logic', icon: 'call_split',
+        label: 'Condition (IF)', cat: 'logic', icon: 'bi-signpost-split-fill',
         inputs: 1, outputs: 2,   // output_1 = YES, output_2 = NO
         defaultData: { variable: '', operator: 'contains', value: '' },
         preview: d => `<strong>${d.variable||'?'}</strong> ${d.operator} "${d.value||''}"`,
         outputLabels: ['Yes', 'No'],
     },
+    random_split: {
+        label: 'Random Split', cat: 'logic', icon: 'bi-shuffle',
+        inputs: 1, outputs: 2,
+        defaultData: { weight_a: 50 },
+        preview: d => `A: <strong>${d.weight_a||50}%</strong> · B: <strong>${100-(d.weight_a||50)}%</strong>`,
+        outputLabels: ['Branch A', 'Branch B'],
+    },
     delay: {
-        label: 'Delay', cat: 'logic', icon: 'timer',
+        label: 'Delay', cat: 'logic', icon: 'bi-clock-fill',
         inputs: 1, outputs: 1,
         defaultData: { seconds: 2 },
         preview: d => `Wait <strong>${d.seconds || 2}s</strong>`,
     },
     human_handoff: {
-        label: 'Human Handoff', cat: 'control', icon: 'support_agent',
+        label: 'Human Handoff', cat: 'control', icon: 'bi-headset',
         inputs: 1, outputs: 0,
         defaultData: { message: 'Connecting you with a human agent...' },
         preview: d => d.message ? `"${d.message.slice(0,35)}"` : '',
     },
     end_flow: {
-        label: 'End Flow', cat: 'control', icon: 'stop_circle',
+        label: 'End Flow', cat: 'control', icon: 'bi-stop-circle-fill',
         inputs: 1, outputs: 0,
         defaultData: {},
         preview: () => 'Conversation complete',
@@ -426,7 +485,7 @@ function buildNodeHtml(type, def, data) {
 
     return `<div class="dflow-node-inner ${catClass}">
         <div class="dflow-node-header">
-            <div class="ni ${iconClass}"><i class="material-icons" style="font-size:12px">${def.icon}</i></div>
+            <div class="ni ${iconClass}"><i class="bi ${def.icon}"></i></div>
             <span class="dflow-node-title">${def.label}</span>
         </div>
         <div class="dflow-node-body node-preview">${preview}</div>
@@ -481,6 +540,9 @@ function openConfigPanel(nodeId) {
             const newData = collectFormData(form, node.name);
             editor.updateNodeDataFromId(nodeId, newData);
             refreshNodePreview(nodeId, newData);
+            // update Branch B display for random_split
+            const weightB = body.querySelector('#weight-b-display');
+            if (weightB) weightB.textContent = (100 - (parseInt(newData.weight_a) || 50)) + '%';
         });
     });
 
@@ -561,7 +623,44 @@ function buildConfigForm(type, def, data, nodeId) {
             break;
         case 'ask_input':
             html = textarea('question', 'Question to ask', data.question) +
-                   field('variable', 'Save answer as variable', 'text', data.variable || 'user_input');
+                   field('variable', 'Save answer as variable', 'text', data.variable || 'user_input') +
+                   select('validation', 'Validate answer format', [
+                       ['none','No validation'],
+                       ['email','Email address'],
+                       ['phone','Phone number'],
+                       ['number','Numeric only'],
+                   ], data.validation || 'none') +
+                   `<small class="text-muted">If validation fails the question is repeated.</small>`;
+            break;
+        case 'trigger_api':
+            html = `<p class="text-muted small mb-2">This flow is triggered by calling your API endpoint:</p>
+                    <code class="d-block p-2 rounded mb-2" style="background:#f1f5f9;font-size:0.75rem;word-break:break-all">POST /api/en/flow/trigger</code>
+                    <p class="text-muted small">Include <code>device_id</code> and <code>phone_number</code> in the request body. Optional: <code>variables</code> object to pre-load session variables.</p>`;
+            break;
+        case 'api_call':
+            html = select('method', 'HTTP Method', [['POST','POST'],['GET','GET'],['PUT','PUT'],['PATCH','PATCH']], data.method || 'POST') +
+                   field('url', 'Request URL', 'url', data.url, 'placeholder="https://api.example.com/webhook"') +
+                   textarea('body', 'Request body (JSON) — use {variable} for session values', data.body) +
+                   field('save_as', 'Save response as variable', 'text', data.save_as || 'api_response') +
+                   `<small class="text-muted">Output 1 (left) = HTTP 2xx success, Output 2 (right) = any error.</small>`;
+            break;
+        case 'add_tag':
+            html = field('tag', 'Tag name to add', 'text', data.tag, 'placeholder="e.g. VIP, Lead, Interested"') +
+                   `<small class="text-muted">Creates the tag if it doesn't exist yet. Contact is associated with this tag.</small>`;
+            break;
+        case 'remove_tag':
+            html = field('tag', 'Tag name to remove', 'text', data.tag, 'placeholder="e.g. Lead"') +
+                   `<small class="text-muted">Removes only this specific tag from the contact. Other tags are unaffected.</small>`;
+            break;
+        case 'send_catalog':
+            html = field('catalog_id', 'Meta Catalog ID', 'text', data.catalog_id, 'placeholder="Your Facebook Catalog ID"') +
+                   textarea('body', 'Message body (optional)', data.body) +
+                   field('footer', 'Footer text (optional)', 'text', data.footer) +
+                   `<small class="text-muted">Requires an approved Meta Commerce Catalog linked to your WABA.</small>`;
+            break;
+        case 'random_split':
+            html = field('weight_a', 'Branch A probability (%)', 'number', data.weight_a ?? 50, 'min="1" max="99"') +
+                   `<p class="text-muted small mt-1">Branch B probability: <strong id="weight-b-display">${100-(data.weight_a??50)}%</strong>.<br>Output 1 (left) = Branch A, Output 2 (right) = Branch B.</p>`;
             break;
         case 'condition':
             html = field('variable', 'Variable name (or leave empty to check last reply)', 'text', data.variable) +
@@ -584,7 +683,7 @@ function buildConfigForm(type, def, data, nodeId) {
     }
 
     html += `<hr><button class="btn btn-outline-danger btn-sm w-100 btn-delete-node">
-        <i class="material-icons me-1" style="font-size:14px">delete</i> Delete Node
+        <i class="bi bi-trash me-1"></i> Delete Node
     </button>`;
 
     return html;
@@ -635,7 +734,7 @@ document.getElementById('btn-save').addEventListener('click', function () {
         flow_json:        flowJson,
     };
 
-    const url    = FLOW_ID ? `/flows/${FLOW_ID}` : '/flows';
+    const url    = FLOW_ID ? UPDATE_URL : STORE_URL;
     const method = FLOW_ID ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -664,11 +763,11 @@ document.getElementById('btn-save').addEventListener('click', function () {
             // Show save feedback
             const btn = document.getElementById('btn-save');
             btn.classList.add('saved');
-            btn.innerHTML = '<i class="material-icons" style="font-size:15px">check</i> {{ __('Saved') }}';
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> {{ __('Saved') }}';
             if (typeof toastr !== 'undefined') toastr.success('{{ __('Flow saved.') }}');
             setTimeout(() => {
                 btn.classList.remove('saved');
-                btn.innerHTML = '<i class="material-icons" style="font-size:15px">save</i> {{ __('Save') }}';
+                btn.innerHTML = '<i class="bi bi-floppy-fill"></i> {{ __('Save') }}';
             }, 2500);
             // Show warnings non-blocking
             if (d.warnings && d.warnings.length) {
@@ -685,7 +784,7 @@ if (toggleBtn) {
     toggleBtn.addEventListener('click', function () {
         const self = this;
         self.disabled = true;
-        fetch(`/flows/${FLOW_ID}/toggle`, {
+        fetch(TOGGLE_URL, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
         }).then(r => r.json()).then(d => {
@@ -693,7 +792,7 @@ if (toggleBtn) {
                 const isNowActive = d.status === 'active';
                 self.className   = 'btn-toggle-status ' + (isNowActive ? 'is-active' : 'is-draft');
                 self.dataset.status = d.status;
-                self.innerHTML   = `<i class="material-icons" style="font-size:14px">${isNowActive ? 'pause_circle' : 'play_circle'}</i> ${isNowActive ? '{{ __('Active') }}' : '{{ __('Draft') }}'}`;
+                self.innerHTML   = `<i class="bi ${isNowActive ? 'bi-pause-circle-fill' : 'bi-play-circle-fill'}"></i> ${isNowActive ? '{{ __('Active') }}' : '{{ __('Draft') }}'}`;
                 if (typeof toastr !== 'undefined') toastr.success(d.message);
             } else {
                 alert(d.message);

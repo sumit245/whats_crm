@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="userinfo" role="tabpanel">
     <h3>User Info API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/info-user</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/info-user</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -58,9 +57,8 @@
     <p>Example URL Request</p>
     <pre class="bg-dark text-white">
         <code class="json">
-{{ url('/') }}/info-user?api_key=1234567890&username=magd
+{{ $baseUrl }}/info-user?api_key=1234567890&username=magd
         </code>
       </pre>
 
 
-</div>

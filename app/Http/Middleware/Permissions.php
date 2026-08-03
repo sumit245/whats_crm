@@ -22,10 +22,13 @@ class Permissions
 		if ($user && $user->level != 'admin' && env("ENABLE_INDEX") == 'yes') {
 			
 			$permissions = [
-				'campaign' => 'bulk_message',
-				'autoreply' => 'autoreply',
-				'aibot' => 'ai_message',
-				'rest-api' => 'api',
+				'campaign'                  => 'bulk_message',
+				'autoreply'                 => 'autoreply',
+				'aibot'                     => 'ai_message',
+				'rest-api'                  => 'api',
+				'integrations.custom-app'   => 'integration_custom_app',
+				'integrations.widget'       => 'integration_website_widget',
+				'ads'                       => 'ads_manager',
 			];
 
 			$routeName = $request->route() ? $request->route()->getName() : null;

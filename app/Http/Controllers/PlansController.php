@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright © Magd Almuntaser, OneXGen Technology. All rights reserved.
+Copyright ï¿½ Magd Almuntaser, OneXGen Technology. All rights reserved.
 Project: MPWA Whatsapp Gateway | Multi Device
 Licensed under the CC BY-NC-ND 4.0 License.
 For details, visit https://creativecommons.org/licenses/by-nc-nd/4.0/.
@@ -34,6 +34,8 @@ class PlansController extends Controller
         'send_vcard',
         'webhook',
         'api',
+        'integration_custom_app',
+        'integration_website_widget',
     ];
 
     /**

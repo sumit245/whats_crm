@@ -10,20 +10,10 @@
             @slot('msg', session('alert')['msg'])
         </x-alert>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     <div class="row">
 
         <div class="col">
             <div class="page-description page-description-tabbed">
-
 
                 <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -36,7 +26,6 @@
                             type="button" role="tab" aria-controls="meta-settings"
                             aria-selected="false">{{__('Meta Cloud API')}}</button>
                     </li>
-
 
                 </ul>
             </div>
@@ -345,7 +334,6 @@
 
         </div>
     </div>
-
 
     <script>
         $('#server').on('change', function() {

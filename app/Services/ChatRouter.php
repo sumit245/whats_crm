@@ -66,13 +66,21 @@ class ChatRouter
 
         $agent->increment('active_chat_count');
 
-        // Broadcast assignment event via Socket.io
+        // Broadcast assignment event to conversation room (agents viewing the chat)
         SocketPushService::pushToConversation($conversation->id, 'conversation_updated', [
             'conversation_id'  => $conversation->id,
             'event'            => 'assigned',
             'agent_id'         => $agent->id,
             'agent_name'       => $agent->name,
             'assignment_source'=> $source,
+        ]);
+
+        // Broadcast to inbox room so sidebar chips update across all agents
+        SocketPushService::pushToInbox($conversation->user_id, 'inbox_update', [
+            'conversation_id'   => $conversation->id,
+            'event'             => 'assigned',
+            'assigned_agent_id' => $agent->id,
+            'agent_name'        => $agent->name,
         ]);
 
         Log::info("ChatRouter: conv #{$conversation->id} assigned to agent #{$agent->id} ({$agent->name}) via {$source}.");

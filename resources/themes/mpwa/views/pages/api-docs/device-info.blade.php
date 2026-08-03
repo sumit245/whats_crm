@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="deviceinfo" role="tabpanel">
     <h3>Device Info API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/info-devices</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/info-devices</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -68,9 +67,8 @@
     <p>Example URL Request</p>
     <pre class="bg-dark text-white">
         <code class="json">
-{{ url('/') }}/info-devices?api_key=1234567890&number=6281222xxxxx
+{{ $baseUrl }}/info-devices?api_key=1234567890&number=6281222xxxxx
         </code>
       </pre>
 
 
-</div>

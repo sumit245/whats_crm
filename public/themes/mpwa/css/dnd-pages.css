@@ -1,0 +1,378 @@
+/* =====================================================================
+   Page-specific spacing & color fixes (chat, flows, agents, templates)
+   ===================================================================== */
+
+/* ── Agents & Teams — remove double padding ───────────────────────── */
+.page-content .app-content.py-3.px-4,
+.page-content .app-content {
+    padding: 0 !important;
+}
+
+.page-content .app-content .row.g-4 {
+    --bs-gutter-y: var(--dnd-space-lg);
+    --bs-gutter-x: var(--dnd-space-lg);
+}
+
+.page-content .app-content > .d-flex.mb-4 {
+    margin-bottom: var(--dnd-space-lg) !important;
+}
+
+/* ── Chat — tighter chrome, token colors ──────────────────────────── */
+.wachat-wrapper {
+    height: calc(100vh - 148px) !important;
+    min-height: 420px !important;
+    border: var(--dnd-border-width) solid var(--dnd-border) !important;
+    border-radius: var(--dnd-radius-md) !important;
+    background: var(--dnd-chat-panel) !important;
+    color: var(--dnd-text) !important;
+}
+
+.wachat-sidebar,
+.wachat-crm {
+    background: var(--dnd-surface) !important;
+    border-color: var(--dnd-border) !important;
+}
+
+.wachat-messages-area {
+    background: var(--dnd-chat-thread) !important;
+}
+
+.wachat-conv-item:hover,
+.wachat-conv-item.active {
+    background: var(--dnd-brand-muted) !important;
+}
+
+.wachat-conv-avatar {
+    background: var(--dnd-brand) !important;
+}
+
+.unread-badge,
+.conv-status-tabs .tab.active {
+    background: var(--dnd-brand-bright) !important;
+    border-color: var(--dnd-brand-bright) !important;
+}
+
+.bubble.outbound {
+    background: var(--dnd-chat-bubble-out) !important;
+}
+
+.bubble.inbound {
+    background: var(--dnd-chat-bubble-in) !important;
+    color: var(--dnd-text) !important;
+}
+
+.agent-chip {
+    background: var(--dnd-brand-muted) !important;
+    color: var(--dnd-brand) !important;
+    border-radius: var(--dnd-radius-pill) !important;
+}
+
+/* ── Flows list — slate theme → DnD tokens ───────────────────────── */
+.flows-page {
+    max-width: 100%;
+    margin: 0;
+    padding: 0 0 var(--dnd-space-xl);
+}
+
+.flows-header {
+    margin-bottom: var(--dnd-space-lg) !important;
+    gap: var(--dnd-space-md) !important;
+}
+
+.flows-stats {
+    gap: var(--dnd-space-md) !important;
+    margin-bottom: var(--dnd-space-lg) !important;
+}
+
+.flow-stat {
+    background: var(--dnd-surface) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border) !important;
+    border-radius: var(--dnd-radius-md) !important;
+    padding: var(--dnd-space-md) var(--dnd-space-lg) !important;
+}
+
+.flow-stat-value,
+.flows-header-left h4,
+.fc-name,
+.fc-metric-val {
+    color: var(--dnd-text) !important;
+}
+
+.flow-stat-label,
+.flows-header-left p,
+.fc-desc,
+.fc-metric-lbl {
+    color: var(--dnd-text-muted) !important;
+}
+
+.btn-new-flow,
+.fc-btn.primary {
+    background: var(--dnd-brand) !important;
+    border-color: var(--dnd-brand) !important;
+    color: #fff !important;
+    border-radius: var(--dnd-radius) !important;
+}
+
+.btn-new-flow:hover,
+.fc-btn.primary:hover {
+    background: var(--dnd-brand-hover) !important;
+    border-color: var(--dnd-brand-hover) !important;
+}
+
+.flow-card {
+    background: var(--dnd-surface) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border) !important;
+    border-radius: var(--dnd-radius-md) !important;
+    padding: var(--dnd-space-lg) !important;
+    gap: var(--dnd-stack) !important;
+    box-shadow: var(--dnd-shadow-sm) !important;
+}
+
+.flow-card:hover {
+    border-color: var(--dnd-brand) !important;
+    box-shadow: var(--dnd-shadow-md) !important;
+    transform: none !important;
+}
+
+.flows-empty {
+    border-radius: var(--dnd-radius-md) !important;
+    padding: var(--dnd-space-xl) var(--dnd-gutter) !important;
+    border-width: var(--dnd-border-width) !important;
+    border-color: var(--dnd-border) !important;
+    background: var(--dnd-surface) !important;
+}
+
+.flows-empty-icon {
+    border-radius: var(--dnd-radius-md) !important;
+    background: var(--dnd-brand-subtle) !important;
+}
+
+.fc-status.active {
+    background: var(--dnd-brand-muted) !important;
+    color: var(--dnd-brand) !important;
+}
+
+.fc-trigger i {
+    color: var(--dnd-brand) !important;
+}
+
+.flows-header-left h4 i {
+    color: var(--dnd-brand) !important;
+}
+
+/* ── Template builder — use DnD tokens, not Meta blue ─────────────── */
+.wa-tpl {
+    --wa-blue: var(--dnd-brand);
+    --wa-blue-soft: var(--dnd-brand-muted);
+    --wa-border: var(--dnd-border);
+    --wa-bg: var(--dnd-bg);
+    --wa-card: var(--dnd-surface);
+    --wa-text: var(--dnd-text);
+    --wa-muted: var(--dnd-text-muted);
+    --wa-green: var(--dnd-brand);
+    --wa-chat-bg: var(--dnd-chat-thread);
+    --wa-bubble: var(--dnd-surface);
+}
+
+.wa-tpl__frame,
+.wa-form-card,
+.wa-type-list,
+.wa-cat-tabs {
+    border-radius: var(--dnd-radius-md) !important;
+    border-width: var(--dnd-border-width) !important;
+}
+
+.wa-cat-tab.is-active {
+    background: var(--dnd-brand-muted) !important;
+    color: var(--dnd-brand) !important;
+    box-shadow: inset 0 -2px 0 var(--dnd-brand) !important;
+}
+
+.wa-type-item.is-selected {
+    background: var(--dnd-brand-muted) !important;
+}
+
+.wa-tpl__step.is-active .wa-tpl__step-icon {
+    border-color: var(--dnd-brand) !important;
+    background: var(--dnd-brand) !important;
+}
+
+.wa-tpl__step.is-done .wa-tpl__step-icon,
+.wa-tpl__step.is-done:not(:last-child)::after {
+    border-color: var(--dnd-brand) !important;
+    background: var(--dnd-brand) !important;
+}
+
+.wa-preview-bubble__cta {
+    color: var(--dnd-accent-link) !important;
+}
+
+.wa-tpl__footer .btn-primary {
+    background: var(--dnd-brand) !important;
+    border-color: var(--dnd-brand) !important;
+}
+
+/* ── Flows list layout (structure) ─────────────────────────────────── */
+.flows-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--dnd-space-lg);
+}
+
+.flows-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dnd-space-md);
+}
+
+.flow-card {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.fc-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--dnd-space-sm);
+}
+
+.fc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--dnd-radius);
+}
+
+.fc-status .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.fc-metrics {
+    display: flex;
+    gap: var(--dnd-space-md);
+    border-top: 1px solid var(--dnd-border);
+    padding-top: var(--dnd-space-md);
+}
+
+.fc-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.fc-actions {
+    display: flex;
+    gap: var(--dnd-space-sm);
+    margin-top: auto;
+}
+
+.fc-btn,
+.fc-toggle {
+    flex: 1;
+    font-size: 0.78rem;
+    border-radius: var(--dnd-radius);
+    padding: 7px 10px;
+}
+
+.fc-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    padding: 4px 9px;
+    border-radius: var(--dnd-radius);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    background: var(--dnd-brand-subtle);
+    color: var(--dnd-text);
+}
+
+.flows-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    border-style: dashed;
+}
+
+.flows-empty-icon {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--dnd-space-md);
+}
+
+/* ── Flow editor — token overrides ─────────────────────────────────── */
+.flow-editor-wrap {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 0 var(--dnd-space-lg);
+}
+
+.flow-topbar {
+    background: var(--dnd-surface) !important;
+    border-bottom: var(--dnd-border-width) solid var(--dnd-border) !important;
+}
+
+.flow-editor-shell {
+    border: var(--dnd-border-width) solid var(--dnd-border) !important;
+    border-radius: var(--dnd-radius-md) !important;
+    background: var(--dnd-surface) !important;
+}
+
+.flow-sidebar,
+.flow-config-panel {
+    background: var(--dnd-surface) !important;
+    border-color: var(--dnd-border) !important;
+}
+
+.flow-canvas-bg {
+    background-color: var(--dnd-bg) !important;
+}
+
+.flow-name-input,
+.topbar-select,
+.topbar-input,
+.flow-back-btn {
+    color: var(--dnd-text) !important;
+    border-color: var(--dnd-border) !important;
+    border-radius: var(--dnd-radius) !important;
+}
+
+.flow-name-input:focus,
+.topbar-select:focus,
+.topbar-input:focus {
+    border-color: var(--dnd-brand) !important;
+    outline: none;
+}
+
+.btn-save {
+    background: var(--dnd-brand) !important;
+    border-radius: var(--dnd-radius) !important;
+}
+
+.btn-save:hover {
+    background: var(--dnd-brand-hover) !important;
+}
+
+.topbar-label {
+    color: var(--dnd-text-muted) !important;
+}
+
+.wachat-main {
+    background: var(--dnd-chat-panel) !important;
+}
+
+.wachat-sidebar .form-select,
+.wachat-sidebar .form-control {
+    background: var(--dnd-surface) !important;
+    color: var(--dnd-text) !important;
+    border-color: var(--dnd-border-strong) !important;
+}

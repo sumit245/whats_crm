@@ -1,7 +1,6 @@
-  <div class="tab-pane fade  " id="sendsticker" role="tabpanel">
       <h3>Send Sticker API</h3>
       <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-      <p>Endpoint: <code>{{ url('/') }}/send-sticker</code></p>
+      <p>Endpoint: <code>{{ $baseUrl }}/send-sticker</code></p>
 
       <p>Request Body : (JSON If POST)
       <table class="table">
@@ -60,7 +59,6 @@
       <p>Example URL Request</p>
       <pre class="bg-dark text-white">
           <code class="json">
-  {{ url('/') }}/send-sticker?api_key=1234567890&sender=62888xxxx&number=62888xxxx&url=https://example.com/image.jpg
+  {{ $baseUrl }}/send-sticker?api_key=1234567890&sender=62888xxxx&number=62888xxxx&url=https://example.com/image.jpg
           </code>
         </pre>
-  </div>

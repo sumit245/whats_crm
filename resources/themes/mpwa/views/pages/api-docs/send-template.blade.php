@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="sendtemplate" role="tabpanel">
     <h3>Send Template API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/send-template</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/send-template</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -81,7 +80,6 @@
     <p>Example URL request</p>
     <pre class="bg-dark text-white p-3">
                             <code>
-{{ url('/') }}/send-template?sender=6282298859671&api_key=ndUJR38JkvyCfLZ&number=082298859671&url=&footer=optional&message=Halo,ini pesan TEMPLATE button&template=call|template 1|082298859671,url|tempate 2|google.com
+{{ $baseUrl }}/send-template?sender=6282298859671&api_key=ndUJR38JkvyCfLZ&number=082298859671&url=&footer=optional&message=Halo,ini pesan TEMPLATE button&template=call|template 1|082298859671,url|tempate 2|google.com
                             </code>
                         </pre>
-</div>

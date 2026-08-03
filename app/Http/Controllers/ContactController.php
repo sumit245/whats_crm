@@ -32,6 +32,25 @@ class ContactController extends Controller
         return response()->json(['html' => $html, 'last_page' => $last_page, 'start_page' => $start_page]);
     }
 
+    public function search(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+        $contacts = $request->user()->contacts()
+            ->when($q, fn ($query) => $query
+                ->where('name',   'like', '%' . $q . '%')
+                ->orWhere('number', 'like', '%' . $q . '%'))
+            ->with('tag:id,name')
+            ->orderBy('name')
+            ->limit(20)
+            ->get(['id', 'name', 'number', 'tag_id']);
+
+        return response()->json($contacts->map(fn ($c) => [
+            'name'      => $c->name,
+            'number'    => $c->number,
+            'phonebook' => $c->tag?->name ?? '',
+        ]));
+    }
+
     public function store(Request $request)
     {
         try {

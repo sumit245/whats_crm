@@ -8,63 +8,88 @@ use App\Models\ChatNote;
 use App\Models\ChatbotSession;
 use App\Models\ContactAttribute;
 use App\Models\Conversation;
+use App\Models\ConversationLabel;
 use App\Models\Device;
 use App\Models\MessageHistory;
+use App\Models\QuickReply;
 use App\Services\ChatRouter;
 use App\Services\FlowEngine;
 use App\Services\Impl\MetaCloudApiService;
 use App\Services\SocketPushService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ChatController extends Controller
 {
+    // Returns the account-owner User and the logged-in agent (if any)
+    private function resolveOwner(Request $request): array
+    {
+        $user = $request->user();
+        if ($user->agent_id) {
+            $agent = $user->agent()->with('user')->first();
+            $owner = $agent->user;
+            return [$owner, $agent];
+        }
+        return [$user, null];
+    }
+
     public function index(Request $request)
     {
-        $devices = $request->user()->devices()->where('status', 'Connected')->get();
+        [$owner, $loggedInAgent] = $this->resolveOwner($request);
+
+        $devices = $owner->devices()->where('status', 'Connected')->get();
 
         $deviceId     = $request->device_id ?? session('selectedDevice.device_id');
         $agentFilter  = $request->agent_id;
         $teamFilter   = $request->team_id;
-        $statusFilter = $request->conv_status ?? 'open';
+        $statusFilter = $request->conv_status ?? '';
 
-        // Supervisor mode: show all agents' conversations when an agent/team filter is active
-        // or the user explicitly requests global view
         $isSupervisor = $request->boolean('global') ||
-            Agent::where('user_id', $request->user()->id)
-                ->whereIn('role', ['supervisor', 'admin'])
-                ->exists();
+            ($loggedInAgent ? $loggedInAgent->isSupervisor() : true);
 
-        $conversations = $request->user()->conversations()
+        $conversations = $owner->conversations()
             ->when($deviceId,     fn ($q) => $q->where('device_id', $deviceId))
             ->when($agentFilter,  fn ($q) => $q->where('assigned_agent_id', $agentFilter))
             ->when($teamFilter,   fn ($q) => $q->whereHas('assignedAgent', fn ($aq) => $aq->where('team_id', $teamFilter)))
             ->when($statusFilter, fn ($q) => $q->where('conversation_status', $statusFilter))
             ->when($request->sla_only, fn ($q) => $q->where('sla_breached', true))
             ->when($request->unassigned_only, fn ($q) => $q->whereNull('assigned_agent_id'))
+            ->when($request->label_id, fn ($q) => $q->whereHas('labels', fn ($lq) => $lq->where('conversation_labels.id', $request->label_id)))
+            // Non-supervisor agents only see their own assigned conversations
+            ->when($loggedInAgent && !$loggedInAgent->isSupervisor(),
+                fn ($q) => $q->where('assigned_agent_id', $loggedInAgent->id))
             ->when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
                 $q->where('contact_name', 'like', '%' . $request->search . '%')
                   ->orWhere('contact_number', 'like', '%' . $request->search . '%');
             }))
-            ->with(['device', 'assignedAgent'])
+            ->with(['device', 'assignedAgent', 'labels'])
             ->orderByDesc('sla_breached')
             ->orderByDesc('last_message_at')
             ->paginate(30);
 
-        $agents = Agent::where('user_id', $request->user()->id)->with('team')->get();
-        $teams  = \App\Models\Team::where('user_id', $request->user()->id)->get();
+        $agents     = Agent::where('user_id', $owner->id)->with('team')->get();
+        $teams      = \App\Models\Team::where('user_id', $owner->id)->get();
+        $userLabels = ConversationLabel::where('user_id', $owner->id)->orderBy('sort_order')->orderBy('name')->get();
 
         return view('theme::pages.chat.index', compact(
             'conversations', 'devices', 'deviceId', 'agents', 'teams',
-            'statusFilter', 'isSupervisor'
+            'statusFilter', 'isSupervisor', 'loggedInAgent', 'userLabels'
         ));
     }
 
     public function show(Request $request, $id)
     {
-        $conversation = $request->user()->conversations()
-            ->with(['device', 'assignedAgent.team', 'notes'])
+        [$owner, $loggedInAgent] = $this->resolveOwner($request);
+
+        $conversation = $owner->conversations()
+            ->with(['device', 'assignedAgent.team', 'notes.agent', 'labels'])
             ->findOrFail($id);
+
+        // Non-supervisor agents can only open their own assigned conversations
+        if ($loggedInAgent && !$loggedInAgent->isSupervisor()) {
+            abort_if($conversation->assigned_agent_id !== $loggedInAgent->id, 403);
+        }
 
         // Mark as read
         $conversation->update(['unread_count' => 0]);
@@ -90,45 +115,46 @@ class ChatController extends Controller
             ->sortBy('created_at')
             ->values();
 
-        $devices      = $request->user()->devices()->where('status', 'Connected')->get();
+        $devices      = $owner->devices()->where('status', 'Connected')->get();
         $deviceId     = $request->device_id ?? session('selectedDevice.device_id');
-        $statusFilter = $request->conv_status ?? $conversation->conversation_status;
+        $statusFilter = $request->conv_status ?? '';
         $agentFilter  = $request->agent_id;
         $teamFilter   = $request->team_id;
 
         $isSupervisor = $request->boolean('global') ||
-            Agent::where('user_id', $request->user()->id)
-                ->whereIn('role', ['supervisor', 'admin'])
-                ->exists();
+            ($loggedInAgent ? $loggedInAgent->isSupervisor() : true);
 
-        // Sidebar conversation list — apply same filters as index() so supervisor controls work
-        $conversations = $request->user()->conversations()
+        // Sidebar conversation list
+        $conversations = $owner->conversations()
             ->when($deviceId,              fn ($q) => $q->where('device_id', $deviceId))
             ->when($agentFilter,           fn ($q) => $q->where('assigned_agent_id', $agentFilter))
             ->when($teamFilter,            fn ($q) => $q->whereHas('assignedAgent', fn ($aq) => $aq->where('team_id', $teamFilter)))
             ->when($statusFilter,          fn ($q) => $q->where('conversation_status', $statusFilter))
             ->when($request->sla_only,     fn ($q) => $q->where('sla_breached', true))
             ->when($request->unassigned_only, fn ($q) => $q->whereNull('assigned_agent_id'))
-            ->with(['device', 'assignedAgent'])
+            ->when($request->label_id,     fn ($q) => $q->whereHas('labels', fn ($lq) => $lq->where('conversation_labels.id', $request->label_id)))
+            ->when($loggedInAgent && !$loggedInAgent->isSupervisor(),
+                fn ($q) => $q->where('assigned_agent_id', $loggedInAgent->id))
+            ->with(['device', 'assignedAgent', 'labels'])
             ->orderByDesc('sla_breached')
             ->orderByDesc('last_message_at')
             ->paginate(30);
 
-        // Approved templates for this device (for first-contact outreach)
-        $approvedTemplates = \App\Models\WabaTemplate::where('user_id', $request->user()->id)
+        // Approved templates for this device
+        $approvedTemplates = \App\Models\WabaTemplate::where('user_id', $owner->id)
             ->where('device_id', $conversation->device_id)
             ->where('status', 'APPROVED')
             ->get(['id', 'name', 'category', 'language', 'components']);
 
-        $agents = Agent::where('user_id', $request->user()->id)->with('team')->get();
-        $teams  = \App\Models\Team::where('user_id', $request->user()->id)->get();
+        $agents = Agent::where('user_id', $owner->id)->with('team')->get();
+        $teams  = \App\Models\Team::where('user_id', $owner->id)->get();
 
-        // CRM right panel: custom attributes and phonebook tags
+        // CRM right panel
         $contactAttributes = ContactAttribute::allFor(
-            $request->user()->id,
+            $owner->id,
             $conversation->contact_number
         );
-        $contactTags = \App\Models\Contact::where('user_id', $request->user()->id)
+        $contactTags = \App\Models\Contact::where('user_id', $owner->id)
             ->where('number', $conversation->contact_number)
             ->with('tag')
             ->get()
@@ -137,10 +163,18 @@ class ChatController extends Controller
             ->unique()
             ->values();
 
+        $quickReplies = QuickReply::where('user_id', $owner->id)
+            ->orderBy('shortcut')
+            ->limit(50)
+            ->get(['shortcut', 'title', 'body']);
+
+        $userLabels = ConversationLabel::where('user_id', $owner->id)->orderBy('sort_order')->orderBy('name')->get();
+
         return view('theme::pages.chat.index', compact(
             'conversation', 'messages', 'timeline', 'conversations', 'devices',
             'deviceId', 'approvedTemplates', 'agents', 'teams',
-            'statusFilter', 'isSupervisor', 'contactAttributes', 'contactTags'
+            'statusFilter', 'isSupervisor', 'contactAttributes', 'contactTags',
+            'quickReplies', 'loggedInAgent', 'userLabels'
         ));
     }
 
@@ -284,7 +318,21 @@ class ChatController extends Controller
             return response()->json(['error' => true, 'message' => $result->error ?? 'Template send failed'], 422);
         }
 
-        $preview = "[Template: {$template->name}]";
+        // Build a human-readable preview by substituting variables into the BODY component text
+        $bodyText = null;
+        foreach ((array) ($template->components ?? []) as $comp) {
+            if (strtoupper($comp['type'] ?? '') === 'BODY') {
+                $bodyText = $comp['text'] ?? null;
+                break;
+            }
+        }
+        if ($bodyText) {
+            $vars = array_values($request->vars ?? []);
+            foreach ($vars as $i => $val) {
+                $bodyText = str_replace('{{' . ($i + 1) . '}}', $val, $bodyText);
+            }
+        }
+        $preview = $bodyText ?: "[Template: {$template->name}]";
         $chatMessage = ChatMessage::create([
             'conversation_id' => $conversation->id,
             'direction'       => 'outbound',
@@ -307,6 +355,289 @@ class ChatController extends Controller
 
         $conversation->update(['last_message' => $preview, 'last_message_at' => now()]);
         $device->increment('message_sent');
+
+        return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
+    }
+
+    // ── Attachment: file upload ────────────────────────────────────────────────
+
+    public function uploadMedia(Request $request, $id)
+    {
+        $request->validate(['file' => 'required|file|max:65536']);
+        $request->user()->conversations()->findOrFail($id); // auth check
+
+        $path = $request->file('file')->store('chat-media', 'public');
+        $url  = \Illuminate\Support\Facades\Storage::url($path);
+        // Prepend APP_URL host if the url is relative
+        if (!str_starts_with($url, 'http')) {
+            $url = rtrim(config('app.url'), '/') . $url;
+        }
+
+        return response()->json(['url' => $url]);
+    }
+
+    // ── Attachment: send media (image / video / document / audio) ─────────────
+
+    public function sendMedia(Request $request, $id)
+    {
+        $request->validate([
+            'url'        => 'required|url',
+            'media_type' => 'required|in:image,video,document,audio',
+            'caption'    => 'nullable|string|max:1024',
+        ]);
+
+        $conversation = $request->user()->conversations()->with('device')->findOrFail($id);
+        $device       = $conversation->device;
+
+        if ($device->status !== 'Connected') {
+            return response()->json(['error' => true, 'message' => __('Device is not connected.')], 422);
+        }
+
+        $service = new MetaCloudApiService($device);
+        $fakeReq = (object) [
+            'media_type' => $request->media_type,
+            'url'        => $request->url,
+            'caption'    => $request->caption ?? '',
+        ];
+        $result = $service->sendMedia($fakeReq, $conversation->contact_number);
+
+        $status  = $result->status ? 'sent' : 'failed';
+        $preview = '[' . ucfirst($request->media_type) . ($request->caption ? ': ' . $request->caption : '') . ']';
+
+        $chatMessage = ChatMessage::create([
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => $request->media_type,
+            'body'            => $preview,
+            'media_url'       => $request->url,
+            'meta_message_id' => $result->message_id ?? null,
+            'status'          => $status,
+        ]);
+
+        $conversation->update(['last_message' => $preview, 'last_message_at' => now()]);
+        $device->increment('message_sent');
+
+        SocketPushService::pushToConversation($conversation->id, 'new_message', [
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => $request->media_type,
+            'body'            => $preview,
+            'created_at'      => now()->toISOString(),
+        ]);
+
+        if (!$result->status) {
+            return response()->json(['error' => true, 'message' => $result->error ?? __('Failed to send.')], 422);
+        }
+
+        return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
+    }
+
+    // ── Attachment: send poll ─────────────────────────────────────────────────
+
+    public function sendPoll(Request $request, $id)
+    {
+        $request->validate([
+            'name'      => 'required|string|max:255',
+            'options'   => 'required|array|min:2|max:10',
+            'options.*' => 'required|string|max:100',
+        ]);
+
+        $conversation = $request->user()->conversations()->with('device')->findOrFail($id);
+        $device       = $conversation->device;
+
+        if ($device->status !== 'Connected') {
+            return response()->json(['error' => true, 'message' => __('Device is not connected.')], 422);
+        }
+
+        $service = new MetaCloudApiService($device);
+        $fakeReq = (object) [
+            'name'      => $request->name,
+            'option'    => $request->options,
+            'countable' => (int) $request->input('countable', 1),
+        ];
+        $result = $service->sendPoll($fakeReq, $conversation->contact_number);
+
+        $status  = $result->status ? 'sent' : 'failed';
+        $preview = '📊 ' . $request->name;
+
+        $chatMessage = ChatMessage::create([
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'poll',
+            'body'            => $preview,
+            'meta_message_id' => $result->message_id ?? null,
+            'status'          => $status,
+        ]);
+
+        $conversation->update(['last_message' => $preview, 'last_message_at' => now()]);
+        $device->increment('message_sent');
+
+        SocketPushService::pushToConversation($conversation->id, 'new_message', [
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'poll',
+            'body'            => $preview,
+            'created_at'      => now()->toISOString(),
+        ]);
+
+        if (!$result->status) {
+            return response()->json(['error' => true, 'message' => $result->error ?? __('Failed to send.')], 422);
+        }
+
+        return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
+    }
+
+    // ── Attachment: send contact (vCard) ──────────────────────────────────────
+
+    public function sendContact(Request $request, $id)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:100',
+            'phone' => 'required|string|max:30',
+        ]);
+
+        $conversation = $request->user()->conversations()->with('device')->findOrFail($id);
+        $device       = $conversation->device;
+
+        if ($device->status !== 'Connected') {
+            return response()->json(['error' => true, 'message' => __('Device is not connected.')], 422);
+        }
+
+        $service = new MetaCloudApiService($device);
+        $fakeReq = (object) ['name' => $request->name, 'phone' => $request->phone];
+        $result  = $service->sendVcard($fakeReq, $conversation->contact_number);
+
+        $status  = $result->status ? 'sent' : 'failed';
+        $preview = '👤 ' . $request->name . ' (' . $request->phone . ')';
+
+        $chatMessage = ChatMessage::create([
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'contact',
+            'body'            => $preview,
+            'meta_message_id' => $result->message_id ?? null,
+            'status'          => $status,
+        ]);
+
+        $conversation->update(['last_message' => $preview, 'last_message_at' => now()]);
+        $device->increment('message_sent');
+
+        SocketPushService::pushToConversation($conversation->id, 'new_message', [
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'contact',
+            'body'            => $preview,
+            'created_at'      => now()->toISOString(),
+        ]);
+
+        if (!$result->status) {
+            return response()->json(['error' => true, 'message' => $result->error ?? __('Failed to send.')], 422);
+        }
+
+        return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
+    }
+
+    // ── Attachment: send catalogue ────────────────────────────────────────────
+
+    public function sendCatalog(Request $request, $id)
+    {
+        $request->validate([
+            'catalog_id' => 'required|string|max:100',
+            'body'       => 'nullable|string|max:1024',
+        ]);
+
+        $conversation = $request->user()->conversations()->with('device')->findOrFail($id);
+        $device       = $conversation->device;
+
+        if ($device->status !== 'Connected') {
+            return response()->json(['error' => true, 'message' => __('Device is not connected.')], 422);
+        }
+
+        $service = new MetaCloudApiService($device);
+        $result  = $service->sendCatalog(
+            $conversation->contact_number,
+            $request->catalog_id,
+            $request->body ?? ''
+        );
+
+        $status  = $result->status ? 'sent' : 'failed';
+        $preview = '🛍 ' . __('Catalogue') . ($request->body ? ': ' . $request->body : '');
+
+        $chatMessage = ChatMessage::create([
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'catalog',
+            'body'            => $preview,
+            'meta_message_id' => $result->message_id ?? null,
+            'status'          => $status,
+        ]);
+
+        $conversation->update(['last_message' => $preview, 'last_message_at' => now()]);
+        $device->increment('message_sent');
+
+        SocketPushService::pushToConversation($conversation->id, 'new_message', [
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'catalog',
+            'body'            => $preview,
+            'created_at'      => now()->toISOString(),
+        ]);
+
+        if (!$result->status) {
+            return response()->json(['error' => true, 'message' => $result->error ?? __('Failed to send.')], 422);
+        }
+
+        return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
+    }
+
+    // ── Attachment: send meeting link (cta_url interactive) ───────────────────
+
+    public function sendMeetingLink(Request $request, $id)
+    {
+        $request->validate([
+            'url'          => 'required|url',
+            'display_text' => 'nullable|string|max:20',
+            'body'         => 'nullable|string|max:1024',
+        ]);
+
+        $conversation = $request->user()->conversations()->with('device')->findOrFail($id);
+        $device       = $conversation->device;
+
+        if ($device->status !== 'Connected') {
+            return response()->json(['error' => true, 'message' => __('Device is not connected.')], 422);
+        }
+
+        $service     = new MetaCloudApiService($device);
+        $displayText = $request->display_text ?: 'Join Meeting';
+        $body        = $request->body ?: $request->url;
+        $result      = $service->sendCtaUrl($conversation->contact_number, $request->url, $displayText, $body);
+
+        $status  = $result->status ? 'sent' : 'failed';
+        $preview = '🔗 ' . $displayText . ': ' . $request->url;
+
+        $chatMessage = ChatMessage::create([
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'meeting_link',
+            'body'            => $preview,
+            'meta_message_id' => $result->message_id ?? null,
+            'status'          => $status,
+        ]);
+
+        $conversation->update(['last_message' => $preview, 'last_message_at' => now()]);
+        $device->increment('message_sent');
+
+        SocketPushService::pushToConversation($conversation->id, 'new_message', [
+            'conversation_id' => $conversation->id,
+            'direction'       => 'outbound',
+            'type'            => 'meeting_link',
+            'body'            => $preview,
+            'created_at'      => now()->toISOString(),
+        ]);
+
+        if (!$result->status) {
+            return response()->json(['error' => true, 'message' => $result->error ?? __('Failed to send.')], 422);
+        }
 
         return response()->json(['error' => false, 'message' => $this->formatMessage($chatMessage)]);
     }
@@ -385,10 +716,13 @@ class ChatController extends Controller
 
     public function storeNote(Request $request, $id)
     {
-        $request->validate(['note' => 'required|string|max:2000']);
+        $request->validate([
+            'note'      => 'required|string|max:500000',
+            'title'     => 'nullable|string|max:120',
+            'note_type' => 'nullable|string|in:text,voice,drawing',
+        ]);
         $conversation = $request->user()->conversations()->findOrFail($id);
 
-        // Try to find the agent record matching the current user (by email or name)
         $agent = Agent::where('user_id', $request->user()->id)
             ->where(fn ($q) => $q->where('email', $request->user()->email)
                 ->orWhere('name', $request->user()->name))
@@ -398,26 +732,84 @@ class ChatController extends Controller
             'conversation_id' => $conversation->id,
             'agent_id'        => $agent?->id,
             'agent_name'      => $agent?->name ?? $request->user()->name,
+            'title'           => $request->input('title') ?: null,
+            'note_type'       => $request->input('note_type', 'text'),
             'note'            => $request->note,
             'is_internal'     => (bool) $request->input('is_internal', true),
         ]);
 
-        // Push whisper to other agents viewing this conversation
-        SocketPushService::pushToConversation($conversation->id, 'new_note', [
-            'id'          => $note->id,
-            'author'      => $note->author,
-            'note'        => $note->note,
-            'is_internal' => $note->is_internal,
-            'time'        => $note->created_at->format('H:i'),
+        SocketPushService::pushToConversation($conversation->id, 'new_note', $this->formatNote($note));
+
+        return response()->json(['ok' => true, 'note' => $this->formatNote($note)]);
+    }
+
+    public function updateNote(Request $request, $id, $noteId)
+    {
+        $request->validate([
+            'note'      => 'required|string|max:500000',
+            'title'     => 'nullable|string|max:120',
+            'note_type' => 'nullable|string|in:text,voice,drawing',
+        ]);
+        $conversation = $request->user()->conversations()->findOrFail($id);
+        $note         = ChatNote::where('conversation_id', $conversation->id)->findOrFail($noteId);
+
+        $note->update([
+            'title'       => $request->input('title') ?: null,
+            'note_type'   => $request->input('note_type', $note->note_type),
+            'note'        => $request->note,
+            'is_internal' => (bool) $request->input('is_internal', $note->is_internal),
         ]);
 
-        return response()->json(['ok' => true, 'note' => [
+        SocketPushService::pushToConversation($conversation->id, 'updated_note', $this->formatNote($note));
+
+        return response()->json(['ok' => true, 'note' => $this->formatNote($note)]);
+    }
+
+    public function destroyNote(Request $request, $id, $noteId)
+    {
+        $conversation = $request->user()->conversations()->findOrFail($id);
+        $note         = ChatNote::where('conversation_id', $conversation->id)->findOrFail($noteId);
+        $note->delete();
+
+        SocketPushService::pushToConversation($conversation->id, 'deleted_note', ['id' => $noteId]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function uploadNoteMedia(Request $request, $id)
+    {
+        $request->validate(['file' => 'required|file|max:20480']);
+        $request->user()->conversations()->findOrFail($id);
+
+        $file = $request->file('file');
+        $path = $file->store("chat-notes/{$id}", 'public');
+
+        return response()->json([
+            'url'  => \Storage::disk('public')->url($path),
+            'name' => $file->getClientOriginalName(),
+            'mime' => $file->getMimeType(),
+        ]);
+    }
+
+    public function printNote(Request $request, $id, $noteId)
+    {
+        $conversation = $request->user()->conversations()->findOrFail($id);
+        $note         = ChatNote::where('conversation_id', $conversation->id)->findOrFail($noteId);
+
+        return view('theme::pages.chat.note-print', compact('note', 'conversation'));
+    }
+
+    private function formatNote(\App\Models\ChatNote $note): array
+    {
+        return [
             'id'          => $note->id,
+            'title'       => $note->title,
+            'note_type'   => $note->note_type ?? 'text',
             'author'      => $note->author,
             'note'        => $note->note,
             'is_internal' => $note->is_internal,
             'time'        => $note->created_at->format('H:i d M'),
-        ]]);
+        ];
     }
 
     // ── Feature 3: Contact attributes ─────────────────────────────────────
@@ -557,5 +949,87 @@ class ChatController extends Controller
             'time'      => $m->created_at->format('H:i'),
             'date'      => $m->created_at->toDateString(),
         ];
+    }
+
+    // ── Labels ────────────────────────────────────────────────────────────────
+
+    public function labelsIndex(Request $request)
+    {
+        [$owner] = $this->resolveOwner($request);
+        $labels = ConversationLabel::where('user_id', $owner->id)
+            ->orderBy('sort_order')->orderBy('name')->get();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['labels' => $labels]);
+        }
+
+        return view('theme::pages.labels.index', compact('labels'));
+    }
+
+    public function labelsStore(Request $request)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:64',
+            'color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        [$owner] = $this->resolveOwner($request);
+
+        $label = ConversationLabel::create([
+            'user_id' => $owner->id,
+            'name'    => $request->name,
+            'color'   => $request->color,
+        ]);
+
+        return response()->json(['error' => false, 'label' => $label]);
+    }
+
+    public function labelsUpdate(Request $request, $labelId)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:64',
+            'color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        [$owner] = $this->resolveOwner($request);
+        $label = ConversationLabel::where('user_id', $owner->id)->findOrFail($labelId);
+        $label->update(['name' => $request->name, 'color' => $request->color]);
+
+        return response()->json(['error' => false, 'label' => $label]);
+    }
+
+    public function labelsReorder(Request $request)
+    {
+        [$owner] = $this->resolveOwner($request);
+        foreach ($request->order ?? [] as $i => $id) {
+            ConversationLabel::where('user_id', $owner->id)->where('id', $id)
+                ->update(['sort_order' => $i]);
+        }
+        return response()->json(['error' => false]);
+    }
+
+    public function labelsDestroy(Request $request, $labelId)
+    {
+        [$owner] = $this->resolveOwner($request);
+        $label = ConversationLabel::where('user_id', $owner->id)->findOrFail($labelId);
+        $label->delete();
+        return response()->json(['error' => false]);
+    }
+
+    public function attachLabel(Request $request, $id, $labelId)
+    {
+        [$owner] = $this->resolveOwner($request);
+        $conversation = $owner->conversations()->findOrFail($id);
+        $label = ConversationLabel::where('user_id', $owner->id)->findOrFail($labelId);
+        $conversation->labels()->syncWithoutDetaching([$label->id]);
+        return response()->json(['error' => false]);
+    }
+
+    public function detachLabel(Request $request, $id, $labelId)
+    {
+        [$owner] = $this->resolveOwner($request);
+        $conversation = $owner->conversations()->findOrFail($id);
+        $conversation->labels()->detach($labelId);
+        return response()->json(['error' => false]);
     }
 }

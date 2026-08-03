@@ -1,0 +1,185 @@
+/* =====================================================================
+   DnD Connect — global component normalization (all dashboard pages)
+   ===================================================================== */
+
+/* Page shell — tighter, consistent */
+.page-content {
+    padding: var(--dnd-gutter);
+    background: var(--dnd-bg);
+    color: var(--dnd-text);
+}
+
+.page-content .dashboard-container {
+    max-width: 100%;
+}
+
+/* Kill oversized Bootstrap radii inside app content */
+.page-content .rounded-4,
+.page-content .rounded-3,
+.page-content .rounded-2 {
+    border-radius: var(--dnd-radius-md) !important;
+}
+
+.page-content .card {
+    background: var(--dnd-surface);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+    box-shadow: var(--dnd-shadow-sm);
+    margin-bottom: var(--dnd-stack);
+}
+
+.page-content .card:last-child {
+    margin-bottom: 0;
+}
+
+.page-content .card .card-header {
+    background: transparent;
+    border-bottom: var(--dnd-border-width) solid var(--dnd-border);
+    padding: var(--dnd-space-md) var(--dnd-space-lg);
+}
+
+.page-content .card .card-body {
+    padding: var(--dnd-space-lg);
+}
+
+.page-content .card .card-body.p-0 {
+    padding: 0;
+}
+
+/* Forms */
+.page-content .form-control,
+.page-content .form-select {
+    border-radius: var(--dnd-radius);
+    border-width: var(--dnd-border-width);
+    border-color: var(--dnd-border-strong);
+    background: var(--dnd-surface);
+    color: var(--dnd-text);
+}
+
+.page-content .form-control:focus,
+.page-content .form-select:focus {
+    border-color: var(--dnd-brand);
+    box-shadow: 0 0 0 2px var(--dnd-brand-muted);
+}
+
+/* Primary = 30% green */
+.page-content .btn-primary {
+    --bs-btn-bg: var(--dnd-brand);
+    --bs-btn-border-color: var(--dnd-brand);
+    --bs-btn-hover-bg: var(--dnd-brand-hover);
+    --bs-btn-hover-border-color: var(--dnd-brand-hover);
+    --bs-btn-active-bg: var(--dnd-brand-active);
+    --bs-btn-active-border-color: var(--dnd-brand-active);
+    border-radius: var(--dnd-radius);
+}
+
+.page-content .btn-outline-primary {
+    --bs-btn-color: var(--dnd-brand);
+    --bs-btn-border-color: var(--dnd-brand);
+    --bs-btn-hover-bg: var(--dnd-brand);
+    --bs-btn-hover-border-color: var(--dnd-brand);
+    border-radius: var(--dnd-radius);
+}
+
+.page-content .btn {
+    border-radius: var(--dnd-radius);
+    font-weight: 500;
+}
+
+.page-content .badge {
+    border-radius: var(--dnd-radius);
+    font-weight: 500;
+}
+
+.dnd-badge-success {
+    background-color: var(--dnd-brand-muted) !important;
+    color: var(--dnd-brand) !important;
+}
+
+.dnd-badge-warning {
+    background-color: rgba(233, 162, 59, 0.15) !important;
+    color: var(--dnd-accent-warning) !important;
+}
+
+.dnd-badge-danger {
+    background-color: rgba(220, 53, 69, 0.12) !important;
+    color: var(--dnd-accent-danger) !important;
+}
+
+/* Page header spacing */
+.page-header {
+    margin-bottom: var(--dnd-space-lg);
+    gap: var(--dnd-space-md);
+}
+
+.page-header__subtitle {
+    color: var(--dnd-text-muted);
+}
+
+/* Extra wrappers some pages still use */
+.page-content .app-content,
+.page-content .content-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100%;
+}
+
+/* Widget stat cards */
+.page-content .widget-icon {
+    border-radius: var(--dnd-radius);
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+}
+
+.page-content .widget-icon.bg-primary {
+    background-color: var(--dnd-brand) !important;
+}
+
+.page-content .widget-icon.bg-success {
+    background-color: var(--dnd-accent-success) !important;
+}
+
+.page-content .widget-icon.bg-info {
+    background-color: var(--dnd-accent-info) !important;
+}
+
+.page-content .widget-icon.bg-warning {
+    background-color: var(--dnd-accent-warning) !important;
+}
+
+/* Tables */
+.page-content .table > thead th {
+    color: var(--dnd-text-secondary);
+}
+
+html.semi-dark .page-content .table thead.table-light,
+html.dark-theme .page-content .table thead.table-light {
+    --bs-table-bg: var(--dnd-surface-raised);
+    --bs-table-color: var(--dnd-text);
+}
+
+html.light-theme .page-content .table thead.table-light {
+    --bs-table-bg: var(--dnd-brand-subtle);
+}
+
+/* Sidebar active — 30% green */
+.sidebar-wrapper .metismenu li.active > a,
+.sidebar-wrapper .metismenu li.mm-active > a {
+    background: var(--dnd-brand-muted) !important;
+    color: var(--dnd-brand) !important;
+}
+
+.sidebar-wrapper .metismenu li.active > a .parent-icon,
+.sidebar-wrapper .metismenu li.mm-active > a .parent-icon {
+    color: var(--dnd-brand) !important;
+}
+
+.float-btn {
+    background-color: var(--dnd-brand) !important;
+}
+
+.footer {
+    border-top: var(--dnd-border-width) solid var(--dnd-border);
+    font-size: 0.8125rem;
+}

@@ -1,7 +1,6 @@
-<div class="tab-pane fade e" id="generateqr" role="tabpanel">
     <h3>Generate QR API</h3>
     <p>Method : <code class="text-success">POST</code>
-    <p>Endpoint: <code>{{ url('/') }}/generate-qr</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/generate-qr</code></p>
 
     <p>Request Body : (JSON If POST)
     <table class="table">
@@ -80,4 +79,3 @@
       </pre>
 
 
-</div>

@@ -75,22 +75,47 @@ $(function() {
 	})
 
 
-	// switcher 
+	// switcher (legacy customizer IDs + header toggle)
+	var DND_THEME_CLASSES = ["light-theme", "dark-theme", "semi-dark", "minimal-theme"];
 
-	$("#LightTheme").on("click", function() {
-		$("html").attr("class", "light-theme")
+	function dndApplyTheme(theme) {
+		var isDark = theme === "dark";
+		var root = document.documentElement;
+		root.classList.remove.apply(root.classList, DND_THEME_CLASSES);
+		root.classList.add(isDark ? "dark-theme" : "light-theme");
+		localStorage.setItem("dnd-theme", theme);
+		$(".dnd-theme-btn").removeClass("is-active").attr("aria-pressed", "false");
+		$("#dnd-theme-" + theme).addClass("is-active").attr("aria-pressed", "true");
+	}
+	window.dndApplyTheme = dndApplyTheme;
+
+	$("#LightTheme, #dnd-theme-light").on("click", function() {
+		dndApplyTheme("light");
 	}),
 
-	$("#DarkTheme").on("click", function() {
-		$("html").attr("class", "dark-theme")
+	$("#DarkTheme, #dnd-theme-dark").on("click", function() {
+		dndApplyTheme("dark");
 	}),
 
 	$("#SemiDarkTheme").on("click", function() {
-		$("html").attr("class", "semi-dark")
+		dndApplyTheme("dark");
 	}),
 
+	(function () {
+		var initial = localStorage.getItem("dnd-theme");
+		if (initial !== "dark" && initial !== "light") {
+			initial = $("html").hasClass("dark-theme") ? "dark" : "light";
+		}
+		if ($("#dnd-theme-light").length) {
+			dndApplyTheme(initial);
+		}
+	})(),
+
 	$("#MinimalTheme").on("click", function() {
-		$("html").attr("class", "minimal-theme")
+		var root = document.documentElement;
+		root.classList.remove.apply(root.classList, DND_THEME_CLASSES);
+		root.classList.add("minimal-theme");
+		localStorage.setItem("dnd-theme", "light");
 	})
 
 

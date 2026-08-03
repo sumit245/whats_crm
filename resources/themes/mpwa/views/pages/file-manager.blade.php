@@ -10,16 +10,7 @@
                         @slot('msg',session('alert')['msg'])
                     </x-alert>
                  @endif
-                 @if ($errors->any())
-                 <div class="alert alert-danger">
-                     <ul>
-                         @foreach ($errors->all() as $error)
-                             <li>{{ $error }}</li>
-                         @endforeach
-                     </ul>
-                 </div>
-                @endif
-             <iframe src="{{url('/laravel-filemanager')}}" style="width: 100%; height: 500px; overflow: hidden; border: none;"></iframe>
+                 <iframe src="{{url('/laravel-filemanager')}}" style="width: 100%; height: 500px; overflow: hidden; border: none;"></iframe>
                 </div>
                
             </div>

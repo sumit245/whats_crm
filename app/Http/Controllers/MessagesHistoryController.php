@@ -16,10 +16,35 @@ use Illuminate\Support\Facades\DB;
 
 class MessagesHistoryController extends Controller
 {
-    public function index(Request $request){
-        $messages = $request->user()->messageHistories()->with('device')->latest()->paginate(15);
-		$userId = $request->user()->id;
-        return view('theme::pages.histories.message', compact('messages', 'userId'));
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        $query = $user->messageHistories()->with('device');
+
+        if ($request->filled('type'))        $query->where('type', $request->type);
+        if ($request->filled('send_by'))     $query->where('send_by', $request->send_by);
+        if ($request->filled('date_from'))   $query->whereDate('created_at', '>=', $request->date_from);
+        if ($request->filled('date_to'))     $query->whereDate('created_at', '<=', $request->date_to);
+        if ($request->filled('delivery'))    $query->where('delivery_status', $request->delivery);
+
+        $messages = $query->latest()->paginate(20)->withQueryString();
+
+        // Funnel stats for this user across all time (not filtered, so always shows total picture)
+        $allQ    = $user->messageHistories();
+        $total   = (clone $allQ)->count();
+        $sent    = (clone $allQ)->whereIn('delivery_status', ['sent','delivered','read'])->count()
+                 + (clone $allQ)->whereNull('delivery_status')->where('status', 'success')->count();
+        $delivered = (clone $allQ)->whereIn('delivery_status', ['delivered','read'])->count();
+        $read      = (clone $allQ)->where('delivery_status', 'read')->count();
+        $failed    = (clone $allQ)->where(function($q) {
+            $q->where('delivery_status', 'failed')->orWhere('status', 'failed');
+        })->count();
+
+        $funnel = compact('total', 'sent', 'delivered', 'read', 'failed');
+
+        $userId = $user->id;
+        return view('theme::pages.histories.message', compact('messages', 'userId', 'funnel'));
     }
 	
 	public function deleteAll(Request $request){

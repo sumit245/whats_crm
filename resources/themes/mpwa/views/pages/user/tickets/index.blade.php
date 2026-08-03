@@ -42,7 +42,7 @@
                                     </td>
                                     <td>{{ $ticket->created_at->format('Y-m-d H:i') }}</td>
                                     <td>
-                                        <a href="{{ route('user.tickets.show', $ticket) }}" class="btn btn-sm btn-info">
+                                        <a href="{{ route('user.tickets.show', $ticket) }}" class="btn btn-sm btn-outline-primary">
                                             {{ __('View') }}
                                         </a>
                                     </td>

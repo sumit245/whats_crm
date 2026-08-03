@@ -7,11 +7,13 @@ use App\Models\ChatMessage;
 use App\Models\Conversation;
 use App\Models\Device;
 use App\Models\MessageDeliveryEvent;
+use App\Models\MessageHistory;
 use App\Models\SuppressionEntry;
 use App\Models\TemplateStatusNotification;
 use App\Models\WabaTemplate;
 use App\Services\ChatRouter;
 use App\Services\FlowEngine;
+use App\Services\OptInService;
 use App\Services\SocketPushService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -118,12 +120,26 @@ class MetaWebhookController extends Controller
                             }
                         }
 
+                        // Opt-in / Opt-out keyword handling
+                        try {
+                            (new OptInService())->handle($conversation, $this->extractText($message), $device);
+                        } catch (\Throwable $e) {
+                            Log::warning('OptInService error: ' . $e->getMessage());
+                        }
+
                         // Feature 2: Run flow engine on inbound messages
                         try {
                             $engine = new FlowEngine();
                             $engine->handleInbound($conversation, $this->extractText($message), $message);
                         } catch (\Throwable $e) {
                             Log::error('FlowEngine error: ' . $e->getMessage());
+                        }
+
+                        // Off-hours auto-reply
+                        try {
+                            (new \App\Services\OffHoursService())->handle($conversation, $device);
+                        } catch (\Throwable $e) {
+                            Log::warning('OffHoursService error: ' . $e->getMessage());
                         }
                     }
                     $this->forwardToWebhook($message, $value['metadata'] ?? [], $value['contacts'] ?? [], $device);
@@ -263,6 +279,16 @@ class MetaWebhookController extends Controller
                         'error_title'     => $status['errors'][0]['title'] ?? null,
                     ]);
                 }
+            }
+        }
+
+        // Update API/web message history delivery status (upgrade-only)
+        $history = MessageHistory::where('meta_message_id', $metaMessageId)->first();
+        if ($history) {
+            $currentRank = MessageHistory::STATUS_RANK[$history->delivery_status] ?? -1;
+            $newRank     = MessageHistory::STATUS_RANK[$statusValue] ?? -1;
+            if ($statusValue === 'failed' || $newRank > $currentRank) {
+                $history->update(['delivery_status' => $statusValue]);
             }
         }
     }

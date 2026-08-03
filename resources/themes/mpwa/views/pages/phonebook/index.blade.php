@@ -6,15 +6,6 @@
             @slot('msg', session('alert')['msg'])
         </x-alert>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     <x-page-header title="{{ __('Phone Book') }}"
         subtitle="{{ __('Manage your contacts and phonebooks') }}"
         :breadcrumb="[__('Phone Book')]">
@@ -22,14 +13,17 @@
             @csrf
             <input type="hidden" name="device"
                 value="{{ Session::has('selectedDevice') ? Session::get('selectedDevice')['device_id'] : '' }}">
-            <button type="submit" class="btn btn-info btn-sm text-white">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
                 {{__('Fetch From Selected Device')}} <i class="bi bi-whatsapp"></i>
             </button>
         </form>
-        <a href="{{ route('contacts.import') }}" class="btn btn-success btn-sm">
+        <a href="{{ route('contacts.import') }}" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Import CSV / Excel') }}
         </a>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="clearPhonebook()">
+        <a href="{{ url('sample_contacts.xlsx') }}" download class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-download me-1"></i>{{ __('Download Sample') }}
+        </a>
+        <button type="button" class="btn btn-danger btn-sm" onclick="clearPhonebook()">
             {{__('Clear Phonebook')}} <i class="bi bi-trash"></i>
         </button>
     </x-page-header>
@@ -58,7 +52,6 @@
             </div>
         </div>
 
-
         <div class="email-header d-xl-flex align-items-center">
             <div class="d-flex align-items-center">
                 <div class="email-toggle-btn"><i class='bx bx-menu'></i>
@@ -78,10 +71,10 @@
                 <button class="btn btn-primary btn-sm add-contact" onclick="addContact()">
                     {{__('Add Contact')}}
                 </button>
-                <button class="btn btn-success btn-sm import-contact" onclick="importContact()">
+                <button class="btn btn-outline-secondary btn-sm import-contact" onclick="importContact()">
                     <i class="bi bi-upload"></i> {{__('Import')}}
                 </button>
-                <button class="btn btn-warning btn-sm export-contact" onclick="exportContact()">
+                <button class="btn btn-outline-secondary btn-sm export-contact" onclick="exportContact()">
                     <i class="bi bi-download"></i> {{__('Export')}}
                 </button>
             </div>
@@ -104,7 +97,6 @@
     <!--end compose mail-->
     <!--start email overlay-->
     <div class="overlay email-toggle-btn-mobile">{{__('Click to close tab')}}</div>
-
 
     {{-- modal add phonebook --}}
     <div class="modal fade" id="addTag" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -154,7 +146,6 @@ document.querySelector('form[action="{{ route('tag.store') }}"]').addEventListen
                             required>
                         <input type="hidden" class="input_phonebookid" name="tag_id" value=" ">
 
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{__('Cancel')}}</button>
@@ -189,7 +180,6 @@ document.querySelector('form[action="{{ route('tag.store') }}"]').addEventListen
 
                         <input type="hidden" name="tag_id" value="" class="import_phonebookid">
 
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{__('Cancel')}}</button>
@@ -199,7 +189,6 @@ document.querySelector('form[action="{{ route('tag.store') }}"]').addEventListen
             </div>
         </div>
         {{-- end modal import contact --}}
-
 
     </div>
     <!-- end modal import contact -->

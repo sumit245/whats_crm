@@ -9,6 +9,12 @@
     <x-page-header title="{{ __('Campaign') }}"
         subtitle="{{ __('Track and control your bulk message campaigns') }}"
         :breadcrumb="[__('Reports'), __('Campaign')]">
+        <a href="{{ route('calendar.index') }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-calendar3 me-1"></i>{{ __('Calendar View') }}
+        </a>
+        <a href="{{ route('campaigns.compare') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-bar-chart-line me-1"></i>{{ __('Compare') }}
+        </a>
         <button onclick="clearCampaign()" type="button" class="btn btn-sm btn-danger">
             <i class="bi bi-trash-fill"></i> {{ __('Clear Campaign') }}
         </button>

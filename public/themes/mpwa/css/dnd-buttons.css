@@ -1,0 +1,155 @@
+/* =====================================================================
+   DnD Connect — semantic buttons (beats bootstrap-extended)
+   Load after dnd-forms, before dnd-pages.
+   ===================================================================== */
+
+.btn-primary,
+.btn-check:focus + .btn-primary,
+.btn-primary:focus,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+    color: #fff !important;
+    background-color: var(--dnd-btn-primary-bg) !important;
+    border-color: var(--dnd-btn-primary-bg) !important;
+    box-shadow: none !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--dnd-btn-primary-hover) !important;
+    border-color: var(--dnd-btn-primary-hover) !important;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+    background-color: var(--dnd-btn-primary-active) !important;
+    border-color: var(--dnd-btn-primary-active) !important;
+}
+
+.btn-primary:disabled,
+.btn-primary.disabled {
+    opacity: 0.65;
+    background-color: var(--dnd-btn-primary-bg) !important;
+    border-color: var(--dnd-btn-primary-bg) !important;
+}
+
+/* Alias: success was used as primary on some pages */
+.btn-success,
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+    color: #fff !important;
+    background-color: var(--dnd-btn-primary-bg) !important;
+    border-color: var(--dnd-btn-primary-bg) !important;
+    box-shadow: none !important;
+}
+
+.btn-success:hover {
+    background-color: var(--dnd-btn-primary-hover) !important;
+    border-color: var(--dnd-btn-primary-hover) !important;
+}
+
+/* Info used for actions → brand, not cyan */
+.btn-info,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+a.btn-info {
+    color: #fff !important;
+    background-color: var(--dnd-btn-primary-bg) !important;
+    border-color: var(--dnd-btn-primary-bg) !important;
+    box-shadow: none !important;
+}
+
+.btn-info:hover,
+a.btn-info:hover {
+    background-color: var(--dnd-btn-primary-hover) !important;
+    border-color: var(--dnd-btn-primary-hover) !important;
+}
+
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:focus {
+    color: var(--dnd-btn-secondary-text) !important;
+    background-color: var(--dnd-btn-secondary-bg) !important;
+    border-color: var(--dnd-btn-secondary-border) !important;
+    box-shadow: none !important;
+}
+
+.btn-danger,
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+    color: #fff !important;
+    background-color: var(--dnd-btn-danger-bg) !important;
+    border-color: var(--dnd-btn-danger-bg) !important;
+    box-shadow: none !important;
+}
+
+.btn-danger:hover {
+    background-color: var(--dnd-btn-danger-hover) !important;
+    border-color: var(--dnd-btn-danger-hover) !important;
+}
+
+.btn-outline-primary {
+    color: var(--dnd-brand) !important;
+    border-color: var(--dnd-brand) !important;
+    background: transparent !important;
+}
+
+.btn-outline-primary:hover {
+    color: #fff !important;
+    background-color: var(--dnd-brand) !important;
+    border-color: var(--dnd-brand) !important;
+}
+
+.btn-outline-secondary {
+    color: var(--dnd-text-secondary) !important;
+    border-color: var(--dnd-border-strong) !important;
+    background: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+    color: var(--dnd-text) !important;
+    background-color: var(--dnd-brand-subtle) !important;
+    border-color: var(--dnd-border-strong) !important;
+}
+
+.btn-outline-danger {
+    color: var(--dnd-accent-danger) !important;
+    border-color: var(--dnd-accent-danger) !important;
+    background: transparent !important;
+}
+
+.btn-outline-danger:hover {
+    color: #fff !important;
+    background-color: var(--dnd-accent-danger) !important;
+}
+
+.btn-outline-success {
+    color: var(--dnd-brand) !important;
+    border-color: var(--dnd-brand) !important;
+}
+
+.btn-outline-success:hover {
+    color: #fff !important;
+    background-color: var(--dnd-brand) !important;
+}
+
+.btn-warning {
+    color: #111b21 !important;
+    background-color: var(--dnd-accent-warning) !important;
+    border-color: var(--dnd-accent-warning) !important;
+}
+
+.btn {
+    border-radius: var(--dnd-radius) !important;
+    font-weight: 500;
+}
+
+.btn-xs,
+.btn-sm {
+    border-radius: var(--dnd-radius) !important;
+}

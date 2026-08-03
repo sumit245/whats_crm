@@ -27,7 +27,7 @@
                                  <label for="2fa_code" class="form-label">{{__('Enter the code')}}</label>
                                  <input type="number" name="2fa_code" class="form-control">
                               </div>
-                              <button type="submit" class="btn btn-info text-white m-t-sm mt-3">{{__('Confirm')}}</button>
+                              <button type="submit" class="btn btn-primary mt-3">{{__('Confirm')}}</button>
                               <button type="button" class="btn btn-danger text-white m-t-sm mt-3" onclick="window.location.href='{{ url('/user/settings') }}'">{{__('Cencel')}}</button>
                            </form>
 						   </div>

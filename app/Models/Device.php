@@ -10,13 +10,14 @@ class Device extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'body', 'webhook', 'status', 'message_sent',
-        'phone_number_id', 'waba_id', 'access_token',
+        'user_id', 'body', 'webhook', 'widget_token', 'widget_config', 'status', 'message_sent',
+        'phone_number_id', 'waba_id', 'business_id', 'access_token',
         'quality_rating', 'messaging_tier', 'meta_profile',
     ];
 
     protected $casts = [
-        'meta_profile' => 'json',
+        'meta_profile'  => 'json',
+        'widget_config' => 'json',
     ];
 
     public function user()

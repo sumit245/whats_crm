@@ -81,7 +81,8 @@ class Kernel extends HttpKernel
         'checkApiKey' => \App\Http\Middleware\CheckApiKey::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
 		'permissions' => \App\Http\Middleware\Permissions::class,
-        '2fa' => \App\Http\Middleware\TwoFactorMiddleware::class,
+        '2fa'      => \App\Http\Middleware\TwoFactorMiddleware::class,
+        'no.agent' => \App\Http\Middleware\NoAgentMiddleware::class,
     ];
 }
 ?>

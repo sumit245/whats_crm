@@ -8,15 +8,6 @@
 		@slot('msg', session('alert')['msg'])
 	</x-alert>
 	@endif
-	@if ($errors->any())
-	<div class="alert alert-danger">
-		<ul>
-			@foreach ($errors->all() as $error)
-			<li>{{ $error }}</li>
-			@endforeach
-		</ul>
-	</div>
-	@endif
 	<div class="row mt-4">
 		<div class="col">
 			<div class="card">
@@ -24,12 +15,7 @@
 					<h5 class="card-title">{{__('Installed Themes')}}</h5>
 				</div>
 				<div class="container mt-3">
-				 @if(session('status'))
-					<div class="alert alert-success">
-						{{ session('status') }}
-					</div>
-				@endif
-					<div class="themes">
+				 <div class="themes">
 						<!-- Installed Themes -->
 						<div class="row mb-5">
 							@foreach($themes as $theme)
@@ -57,7 +43,7 @@
 										@if ($theme['folder'] == env('THEME_NAME'))
 											<button onclick="#" class="btn btn-dark" disabled>{{__('Activated')}}</button>
 										@else
-											<button onclick="window.location.href = '{{ route('themes.active', $theme['folder']) }}'" class="btn btn-success">{{__('Activate')}}</button>
+											<button onclick="window.location.href = '{{ route('themes.active', $theme['folder']) }}'" class="btn btn-primary">{{__('Activate')}}</button>
 										@endif
 										</div>
 										</div>
@@ -101,10 +87,10 @@
 													@csrf
 													<input type="hidden" name="download" value="{{$onlone['download']}}" />
 													<input type="hidden" name="folder" value="{{$onlone['folder']}}" />
-													<button type="submit" class="btn btn-success">{{__('Download & Active')}}</button>
+													<button type="submit" class="btn btn-primary">{{__('Download & Active')}}</button>
 												</form>
 											@else
-												<button onclick="#" class="btn btn-success" disabled>{{__('Activated')}}</button>
+												<button onclick="#" class="btn btn-primary" disabled>{{__('Activated')}}</button>
 											@endif
 										@else
 											<button onclick="#" class="btn btn-danger" disabled>{{__('Not compatible')}}</button>

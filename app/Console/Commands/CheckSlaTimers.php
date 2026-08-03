@@ -25,13 +25,18 @@ class CheckSlaTimers extends Command
         foreach ($breached as $conv) {
             $conv->update(['sla_breached' => true]);
 
-            // Alert all connected supervisors / the inbox owner
-            SocketPushService::pushToConversation($conv->id, 'sla_breach', [
+            $slaPayload = [
                 'conversation_id' => $conv->id,
                 'contact_name'    => $conv->contact_name ?? $conv->contact_number,
                 'agent_id'        => $conv->assigned_agent_id,
                 'assigned_at'     => $conv->assigned_at?->toISOString(),
-            ]);
+            ];
+
+            // Alert agents currently viewing this conversation
+            SocketPushService::pushToConversation($conv->id, 'sla_breach', $slaPayload);
+
+            // Also alert supervisors on the inbox list page who aren't in the conversation room
+            SocketPushService::pushToInbox($conv->user_id, 'sla_breach', $slaPayload);
         }
 
         if ($breached->count()) {

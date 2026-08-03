@@ -35,6 +35,24 @@ class Agent extends Model
         return $this->hasMany(ChatNote::class);
     }
 
+    public function agentUser()
+    {
+        return $this->hasOne(User::class);
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(AgentInvitation::class);
+    }
+
+    public function hasPendingInvite(): bool
+    {
+        return $this->invitations()
+            ->whereNull('accepted_at')
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
     public function isAvailable(): bool
     {
         return $this->status === 'online' && $this->active_chat_count < $this->max_concurrent_chats;

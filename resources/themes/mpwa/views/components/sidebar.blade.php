@@ -47,6 +47,9 @@
                 <li class="{{request()->is('suppression*') ? 'active-page' : ''}}">
                     <a href="{{ route('suppression.index') }}" class=""><i class="material-icons-two-tone">block</i>{{ __('Suppression List') }}</a>
                 </li>
+                <li class="{{request()->is('opt-in*') ? 'active-page' : ''}}">
+                    <a href="{{ route('optin.show') }}" class=""><i class="material-icons-two-tone">manage_accounts</i>{{ __('Opt-in / Opt-out') }}</a>
+                </li>
                 <li class="{{request()->is('message/test') ? 'active-page' : ''}}">
                     <a href="{{route('messagetest')}}" class=""><i class="material-icons-two-tone">note</i>{{__('system.test')}}</a>
                 </li>

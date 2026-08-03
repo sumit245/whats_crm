@@ -76,7 +76,7 @@
                             <button type="button" id="backBtn" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> {{ __('Back') }}
                             </button>
-                            <button type="button" id="importBtn" class="btn btn-success">
+                            <button type="button" id="importBtn" class="btn btn-primary">
                                 <i class="bi bi-upload"></i> {{ __('Import Contacts') }}
                             </button>
                         </div>

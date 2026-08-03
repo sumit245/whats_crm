@@ -14,7 +14,7 @@
 --}}
 <div class="page-header">
     <div class="page-header__titles">
-        <h1 class="page-header__title">{{ $title }}</h1>
+        <h1 class="page-header__title">{{ html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8') }}</h1>
         @if ($subtitle)
             <p class="page-header__subtitle">{{ $subtitle }}</p>
         @endif
@@ -26,7 +26,7 @@
                     </li>
                     @foreach ($breadcrumb as $crumb)
                         <li class="breadcrumb-item {{ $loop->last ? 'active' : '' }}"
-                            @if ($loop->last) aria-current="page" @endif>{{ $crumb }}</li>
+                            @if ($loop->last) aria-current="page" @endif>{{ html_entity_decode($crumb, ENT_QUOTES | ENT_HTML5, 'UTF-8') }}</li>
                     @endforeach
                 </ol>
             </nav>

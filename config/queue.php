@@ -35,10 +35,10 @@ return [
         ],
 
         'database' => [
-            'driver' => 'database',
-            'table' => 'jobs',
-            'queue' => 'default',
-            'retry_after' => 90,
+            'driver'       => 'database',
+            'table'        => 'jobs',
+            'queue'        => 'default',
+            'retry_after'  => 330, // > ProcessBlastJob timeout (300s) to prevent duplicate sends
             'after_commit' => false,
         ],
 
@@ -63,11 +63,21 @@ return [
         ],
 
         'redis' => [
-            'driver' => 'redis',
-            'connection' => 'default',
-            'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => 90,
-            'block_for' => null,
+            'driver'       => 'redis',
+            'connection'   => 'default',
+            'queue'        => env('REDIS_QUEUE', 'default'),
+            'retry_after'  => 330,
+            'block_for'    => 5,
+            'after_commit' => false,
+        ],
+
+        // High-throughput broadcast queue (switch QUEUE_CONNECTION=redis to activate)
+        'redis-broadcasts' => [
+            'driver'       => 'redis',
+            'connection'   => 'default',
+            'queue'        => 'broadcasts',
+            'retry_after'  => 330,
+            'block_for'    => 5,
             'after_commit' => false,
         ],
 

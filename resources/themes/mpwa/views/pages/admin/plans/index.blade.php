@@ -11,16 +11,7 @@
         </x-alert>
     @endif
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-	@php
+    @php
 		$features = [
 			'messages_limit' => __('Messages Limit'),
 			'device_limit' => __('Device Limit'),

@@ -27,6 +27,10 @@
                  <div class="">
                      <p class="mb-0"><b>{{ $contact->number }} </b></p>
                  </div>
+                 <a href="{{ route('contact.timeline', $contact->number) }}"
+                    class="btn btn-sm text-primary" title="{{ __('360° Profile') }}" target="_blank">
+                     <i class="bi bi-person-lines-fill"></i>
+                 </a>
                  <button onclick="deleteContact({{ $contact->id }})" class="btn btn-sm text-danger">
                      <i class="bi bi-trash"></i>
                  </button>

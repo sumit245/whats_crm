@@ -9,7 +9,7 @@ class ChatbotSession extends Model
 {
     protected $fillable = [
         'conversation_id', 'flow_id', 'current_node_id',
-        'state', 'variables', 'awaiting_variable',
+        'state', 'variables', 'awaiting_variable', 'awaiting_validation',
         'fallback_count', 'last_executed_at', 'expires_at',
     ];
 

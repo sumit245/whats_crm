@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\LibraryTemplate;
 use App\Models\WabaTemplate;
 use App\Services\MetaTemplateService;
 use Illuminate\Http\Request;
@@ -199,6 +200,169 @@ class TemplateController extends Controller
             'message'    => $oldStatus !== $newStatus
                 ? __('Status updated: :old → :new', ['old' => $oldStatus, 'new' => $newStatus])
                 : __('Status confirmed: :status (no change)', ['status' => $newStatus]),
+        ]);
+    }
+
+    // ── Template Library (full page) ─────────────────────────────────────────
+
+    public function library(Request $request)
+    {
+        $user     = auth()->user();
+        $devices  = $user->devices()->get();
+
+        $category = $request->category;
+        $language = $request->language;
+        $industry = $request->industry;
+        $usecase  = $request->usecase;
+        $search   = $request->search;
+
+        $templates = LibraryTemplate::query()
+            ->category($category)
+            ->language($language)
+            ->industry($industry)
+            ->usecase($usecase)
+            ->search($search)
+            ->orderBy('category')
+            ->orderBy('name')
+            ->paginate(24)
+            ->withQueryString();
+
+        $lastSync  = LibraryTemplate::max('synced_at');
+        $total     = LibraryTemplate::count();
+
+        // Distinct values for filter dropdowns (only non-null)
+        $industries = LibraryTemplate::whereNotNull('industry')
+            ->distinct()->orderBy('industry')->pluck('industry');
+        $usecases   = LibraryTemplate::whereNotNull('usecase')
+            ->distinct()->orderBy('usecase')->pluck('usecase');
+
+        return view('theme::pages.templates.library', compact(
+            'devices', 'templates', 'category', 'language', 'industry',
+            'usecase', 'search', 'lastSync', 'total', 'industries', 'usecases'
+        ));
+    }
+
+    public function librarySync(Request $request)
+    {
+        $request->validate(['device_id' => 'required|exists:devices,id']);
+        $device = $request->user()->devices()->findOrFail($request->device_id);
+
+        // Always hit Meta fresh (user explicitly requested sync)
+        $this->templateService->clearLibraryCache();
+
+        $result = $this->templateService->fetchLibraryTemplates(
+            $device,
+            $request->category ?: null,
+            $request->language  ?: null,
+        );
+
+        if ($result['error']) {
+            return response()->json(['error' => true, 'message' => $result['error']], 502);
+        }
+
+        $synced = now();
+        $count  = 0;
+
+        foreach ($result['data'] as $item) {
+            LibraryTemplate::updateOrCreate(
+                ['name' => $item['name'], 'language' => $item['language']],
+                [
+                    'category'  => $item['category']  ?? 'MARKETING',
+                    'topic'     => $item['topic']      ?? null,
+                    'usecase'   => $item['usecase']    ?? null,
+                    'industry'  => $item['industry']   ?? null,
+                    'header'    => $item['header']     ?? null,
+                    'body'      => $item['body']       ?? null,
+                    'footer'    => $item['footer']     ?? null,
+                    'buttons'   => $item['buttons']    ?? [],
+                    'meta_id'   => $item['id']         ?? null,
+                    'synced_at' => $synced,
+                ]
+            );
+            $count++;
+        }
+
+        return response()->json([
+            'error'   => false,
+            'count'   => $count,
+            'message' => __(':count templates synced to library.', ['count' => $count]),
+        ]);
+    }
+
+    public function libraryFetch(Request $request)
+    {
+        $request->validate(['device_id' => 'required|exists:devices,id']);
+        $device = $request->user()->devices()->findOrFail($request->device_id);
+
+        if ($request->boolean('refresh')) {
+            $this->templateService->clearLibraryCache();
+        }
+
+        $result = $this->templateService->fetchLibraryTemplates(
+            $device,
+            $request->category ?: null,
+            $request->language  ?: null,
+        );
+
+        if ($result['error']) {
+            return response()->json(['error' => true, 'message' => $result['error']], 502);
+        }
+
+        return response()->json([
+            'data'   => $result['data'],
+            'cached' => $result['cached'] ?? false,
+            'count'  => count($result['data']),
+        ]);
+    }
+
+    public function addFromLibrary(Request $request)
+    {
+        $request->validate([
+            'device_id'       => 'required|exists:devices,id',
+            'template'        => 'required|array',
+            'template.name'   => 'required|string',
+            'template.language' => 'required|string|max:10',
+            'template.category' => 'required|string',
+            'custom_url'      => 'nullable|url',
+        ]);
+
+        $device   = $request->user()->devices()->findOrFail($request->device_id);
+        $tpl      = $request->template;
+        $result   = $this->templateService->addFromLibrary($device, $tpl, $request->custom_url);
+
+        if (!$result['success']) {
+            return response()->json(['error' => true, 'message' => $result['error']], 422);
+        }
+
+        $metaData = $result['data'];
+
+        $template = WabaTemplate::updateOrCreate(
+            [
+                'user_id' => $request->user()->id,
+                'name'    => $metaData['name'] ?? $tpl['name'],
+                'device_id' => $device->id,
+            ],
+            [
+                'meta_template_id' => $metaData['id'] ?? null,
+                'category'         => $metaData['category'] ?? $tpl['category'],
+                'language'         => $tpl['language'],
+                'status'           => strtoupper($metaData['status'] ?? 'PENDING'),
+                'components'       => $metaData['components'] ?? [],
+                'meta_synced_at'   => now(),
+            ]
+        );
+
+        return response()->json([
+            'error'   => false,
+            'message' => __('Template ":name" submitted — status: :status', [
+                'name'   => $template->name,
+                'status' => $template->status,
+            ]),
+            'template' => [
+                'id'     => $template->id,
+                'name'   => $template->name,
+                'status' => $template->status,
+            ],
         ]);
     }
 

@@ -8,15 +8,6 @@
             @slot('msg', session('alert')['msg'])
         </x-alert>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     <x-page-header title="{{ __('Create Campaign') }}"
         subtitle="{{ __('Build and schedule a bulk message campaign') }}"
         :breadcrumb="[__('Campaign'), __('Create')]">
@@ -85,13 +76,45 @@
                                 </div>
                                 <div id="step-2" class="tab-pane" role="tabpanel" aria-labelledby="step-2">
 
+                                    {{-- Audience source toggle (Phonebook ↔ Segment) --}}
                                     <div class="mb-3 form-group">
-                                        <label class="form-label">{{__('Select PhoneBook')}}</label>
-                                        <select id="phonebook_id" name="phonebook_id" class="single-select phonebook-option">
-											@foreach ($phonebooks as $phonebook)
-											  <option value="{{ $phonebook->id }}">{{ $phonebook->name }} ( {{$phonebook->contacts_count }} {{__('Numbers')}} )</option>
-											@endforeach
-                                        </select>
+                                        <label class="form-label">{{ __('Audience Source') }}</label>
+                                        <div class="btn-group w-100 mb-2" role="group">
+                                            <input type="radio" class="btn-check" name="audience_type" id="aud-phonebook" value="phonebook" checked>
+                                            <label class="btn btn-outline-primary" for="aud-phonebook">
+                                                <i class="bi bi-book me-1"></i>{{ __('Phonebook') }}
+                                            </label>
+                                            <input type="radio" class="btn-check" name="audience_type" id="aud-segment" value="segment">
+                                            <label class="btn btn-outline-primary" for="aud-segment">
+                                                <i class="bi bi-funnel me-1"></i>{{ __('Dynamic Segment') }}
+                                            </label>
+                                        </div>
+
+                                        {{-- Phonebook picker (default) --}}
+                                        <div id="phonebook-picker">
+                                            <select id="phonebook_id" name="phonebook_id" class="single-select phonebook-option">
+                                                <option value="">{{ __('Select a phonebook') }}</option>
+                                                @foreach ($phonebooks as $phonebook)
+                                                    <option value="{{ $phonebook->id }}">{{ $phonebook->name }} ({{ $phonebook->contacts_count }} {{ __('Numbers') }})</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        {{-- Segment picker (hidden by default) --}}
+                                        <div id="segment-picker" class="d-none">
+                                            <select id="segment_id" name="segment_id" class="form-select">
+                                                <option value="">{{ __('Select a segment') }}</option>
+                                                @foreach ($segments as $seg)
+                                                    <option value="{{ $seg->id }}">{{ $seg->name }} ({{ $seg->contact_count ?? 0 }} {{ __('contacts') }})</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($segments->isEmpty())
+                                                <div class="form-text text-warning mt-1">
+                                                    {{ __('No segments yet.') }}
+                                                    <a href="{{ route('segments.create') }}" target="_blank">{{ __('Create one →') }}</a>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="type" class="form-label">{{__('Type Message')}}</label>
@@ -107,7 +130,6 @@
                                             <option value="list">{{__('List Message')}} </option>
                                             <option value="button">{{__('Button Message ( Deprecated )')}}</option>
                                             <option value="template">{{__('Template Message ( Deprecated )')}}</option>
-
 
                                         </select>
                                     </div>
@@ -161,14 +183,12 @@
                         </div>
                         {{-- prev and next button --}}
 
-
                         <div class="d-flex justify-content-center gap-2 mt-4 campaign-wizard-nav">
-                            <button class="btn btn-info text-white" id="prev-btn" type="button">{{__('Previous')}}</button>
-                            <button class="btn btn-info text-white" id="next-btn" type="button">{{__('Next')}}</button>
-                            <button class="btn btn-info text-white d-none buttonsubmit" id="finish-btn"
+                            <button class="btn btn-outline-secondary" id="prev-btn" type="button">{{__('Previous')}}</button>
+                            <button class="btn btn-primary" id="next-btn" type="button">{{__('Next')}}</button>
+                            <button class="btn btn-primary d-none buttonsubmit" id="finish-btn"
                                 type="button">{{__('Create Campaign')}}</button>
                         </div>
-
 
                     </div>
             </div>
@@ -189,7 +209,6 @@
             if (window.location.hash === '#step-2' || window.location.hash === '#step-3') {
                 window.location.hash = '#step-1';
             }
-
 
             $("#smartwizard").smartWizard({
                 selected: 0,
@@ -306,42 +325,87 @@
 				if (!template) return;
 
 				const body = bodyTextOf(template);
+				const comps = template.components || [];
 
 				// Preview bubble
 				$('#meta_template_bubble').text(body || template.name);
 				$('#meta_template_preview').removeClass('d-none');
 
-				// Discover numbered placeholder variables in the body
+				let html = '';
+
+				// ── Body variable mapping ──────────────────────────────────────
 				const nums = [...body.matchAll(/\{\{(\d+)\}\}/g)].map(m => parseInt(m[1]));
 				const unique = [...new Set(nums)].sort((a, b) => a - b);
 
-				if (unique.length === 0) {
-					$('#meta_template_vars').html('<div class="alert alert-light border py-2 mb-0"><small>{{ __("This template has no variables.") }}</small></div>');
-					refreshWizardLayout();
-					return;
+				if (unique.length > 0) {
+					html += '<label class="form-label fw-semibold">{{ __("Map Body Variables") }}</label>';
+					unique.forEach(n => {
+						const token = '{' + '{' + n + '}' + '}';
+						html += `
+						<div class="row g-2 align-items-center mb-2">
+							<div class="col-2"><span class="badge bg-secondary">${token}</span></div>
+							<div class="col-5">
+								<select name="var_source_${n}" class="form-select form-select-sm var-source" data-index="${n}">
+									<option value="name">{{ __("Contact Name") }}</option>
+									<option value="number">{{ __("Contact Number") }}</option>
+									<option value="static">{{ __("Static text") }}</option>
+								</select>
+							</div>
+							<div class="col-5">
+								<input type="text" name="var_static_${n}" class="form-control form-control-sm var-static"
+									data-index="${n}" placeholder="{{ __('Static value') }}" disabled>
+							</div>
+						</div>`;
+					});
+				} else {
+					html += '<div class="alert alert-light border py-2 mb-2"><small>{{ __("This template has no body variables.") }}</small></div>';
 				}
 
-				let html = '<label class="form-label">{{ __("Map Template Variables") }}</label>';
-			unique.forEach(n => {
-				// Build the literal placeholder token in JS so Blade never tries
-				// to parse it as a PHP echo (which broke view compilation).
-				const token = '{' + '{' + n + '}' + '}';
-				html += `
-					<div class="row g-2 align-items-center mb-2">
-						<div class="col-2"><span class="badge bg-secondary">${token}</span></div>
-						<div class="col-5">
-							<select name="var_source_${n}" class="form-select form-select-sm var-source" data-index="${n}">
-								<option value="name">{{ __("Contact Name") }}</option>
-								<option value="number">{{ __("Contact Number") }}</option>
-								<option value="static">{{ __("Static text") }}</option>
-							</select>
-						</div>
-						<div class="col-5">
-							<input type="text" name="var_static_${n}" class="form-control form-control-sm var-static"
-								data-index="${n}" placeholder="{{ __('Static value') }}" disabled>
-						</div>
-					</div>`;
-				});
+				// ── Header media URL (IMAGE / DOCUMENT / VIDEO) ────────────────
+				const headerComp = comps.find(c => (c.type || '').toUpperCase() === 'HEADER');
+				if (headerComp) {
+					const fmt = (headerComp.format || '').toUpperCase();
+					if (['IMAGE', 'DOCUMENT', 'VIDEO'].includes(fmt)) {
+						const iconMap = { IMAGE: 'image', DOCUMENT: 'description', VIDEO: 'videocam' };
+						html += `
+						<div class="mt-3 border rounded p-3 bg-light">
+							<label class="form-label fw-semibold">
+								<i class="material-icons align-middle me-1" style="font-size:16px">${iconMap[fmt] || 'attach_file'}</i>
+								{{ __('Header Media URL') }} <span class="badge bg-info text-white ms-1">${fmt}</span>
+							</label>
+							<input type="url" name="header_url" class="form-control" placeholder="https://example.com/file${fmt === 'IMAGE' ? '.jpg' : fmt === 'VIDEO' ? '.mp4' : '.pdf'}" required>
+							<input type="hidden" name="header_type" value="${fmt.toLowerCase()}">
+							<div class="form-text">{{ __('Public URL of the media file sent as the template header. Must be accessible by Meta.') }}</div>
+						</div>`;
+					}
+				}
+
+				// ── URL button suffix parameters ───────────────────────────────
+				const urlPh1 = '{' + '{1}' + '}';
+				const buttonsComp = comps.find(c => (c.type || '').toUpperCase() === 'BUTTONS');
+				if (buttonsComp && Array.isArray(buttonsComp.buttons)) {
+					buttonsComp.buttons.forEach((btn, idx) => {
+						if ((btn.type || '').toUpperCase() === 'URL' && typeof btn.url === 'string' && btn.url.includes(urlPh1)) {
+							html += `
+							<div class="mt-3 border rounded p-3 bg-light">
+								<label class="form-label fw-semibold">
+									<i class="material-icons align-middle me-1" style="font-size:16px">link</i>
+									{{ __('URL Button Suffix') }} — <em>${btn.text || 'Button ' + (idx + 1)}</em>
+								</label>
+								<div class="input-group">
+									<span class="input-group-text text-muted small text-truncate" style="max-width:200px">${btn.url.replace(urlPh1, '')}</span>
+									<input type="text" name="button_${idx}_url_suffix" class="form-control" placeholder="{{ __('e.g. order/12345 or leave blank') }}">
+								</div>
+								<div class="form-text">{{ __('Replaces the') }} @{{1}} {{ __('placeholder in the button URL. Can be left blank.') }}</div>
+							</div>`;
+						}
+					});
+				}
+
+				if (!html) {
+					html = '<div class="alert alert-light border py-2 mb-0"><small>{{ __("This template has no variables.") }}</small></div>';
+				}
+
 				$('#meta_template_vars').html(html);
 				refreshWizardLayout();
 			});
@@ -350,6 +414,18 @@
 			$(document).on('change', '.var-source', function () {
 				const i = $(this).data('index');
 				$(`.var-static[data-index='${i}']`).prop('disabled', $(this).val() !== 'static');
+			});
+
+			// ── Audience type toggle (Phonebook ↔ Segment) ───────────────────
+			$('input[name="audience_type"]').on('change', function () {
+				if ($(this).val() === 'segment') {
+					$('#phonebook-picker').addClass('d-none');
+					$('#segment-picker').removeClass('d-none');
+				} else {
+					$('#segment-picker').addClass('d-none');
+					$('#phonebook-picker').removeClass('d-none');
+				}
+				refreshWizardLayout();
 			});
 
             // External Button Events
@@ -370,7 +446,6 @@
                 
                 return true;
             }
-
 
             function checkMultipleForm(type, count = 3, template = false) {
                 let success = false;
@@ -414,18 +489,23 @@
                 return success;
             }
 
-
-
             function validation(step) {
                 if (step == 0) {
                     return requiredInput('campaign_name');
                 }
                 if (step == 1) {
-                    let phonebook = $('.phonebook-option').val();
+                    const audienceType = $('input[name="audience_type"]:checked').val();
                     const type = $('#type').val();
-                    if (phonebook == null) {
-                        toastr['warning']('{{__("Please select phonebook")}}');
-                        return false;
+                    if (audienceType === 'segment') {
+                        if (!$('#segment_id').val()) {
+                            toastr['warning']('{{__("Please select a segment")}}');
+                            return false;
+                        }
+                    } else {
+                        if (!$('.phonebook-option').val()) {
+                            toastr['warning']('{{__("Please select a phonebook")}}');
+                            return false;
+                        }
                     }
                     if (type == 'metatemplate') {
                         if (!$('#meta_template_select').val()) {
@@ -518,7 +598,6 @@
                     }
                 }
 
-
                 // find input and select in tab-content
                 const input = $('.tab-content').find('input');
                 const select = $('.tab-content').find('select');
@@ -560,13 +639,6 @@
 
                 }
 
-
-
-
-
-
-
-
                 $.ajax({
                     url: "{{ url('/campaign/store') }}",
                     method: 'POST',
@@ -600,16 +672,7 @@
                     }
                 });
 
-
-
-
             });
-
-
-
-
-
-
 
         });
     </script>

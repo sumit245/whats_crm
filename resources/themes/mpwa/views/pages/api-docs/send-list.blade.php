@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="sendlist" role="tabpanel">
     <h3>Send List message API </h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/send-LIST</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/send-LIST</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -106,9 +105,8 @@
     <p>Example URL request</p>
     <pre class="bg-dark text-white p-3">
                             <code> 
-{{ url('/') }}/send-list?sender=6282298859671&api_key=ndUJR38JkvyCfLZ&number=082298859671&name=pesan list&footer=optional&title=title list&buttontext=ey&message=Halo,ini pesan list&list=sdf,list2,list3
+{{ $baseUrl }}/send-list?sender=6282298859671&api_key=ndUJR38JkvyCfLZ&number=082298859671&name=pesan list&footer=optional&title=title list&buttontext=ey&message=Halo,ini pesan list&list=sdf,list2,list3
                             </code>
                         </pre>
     <br>
     
-</div>

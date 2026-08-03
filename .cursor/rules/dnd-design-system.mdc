@@ -1,0 +1,60 @@
+---
+description: DnD Connect UI v2 — 60-30-10, light/dark only, semantic buttons
+alwaysApply: true
+---
+
+# DnD Connect design system v2
+
+CSS: `public/themes/mpwa/css/dnd-tokens.css`, `dnd-forms.css`, `dnd-buttons.css`, `dnd-components.css`, `dnd-pages.css`, `dnd-chrome.css`.
+
+Brand reference: `docs/design-audit/brandkit-3x3.png`
+
+## Themes
+
+- Use **`html.light-theme`** or **`html.dark-theme`** only. Do not default to `semi-dark` (hybrid header/sidebar).
+- Persist preference: `localStorage` key `dnd-theme` = `light` | `dark`.
+- All colors via `var(--dnd-*)` — no `#3461ff`, slate palettes, or Meta blue on dashboard pages.
+
+## 60-30-10
+
+| Share | Role | Tokens |
+|-------|------|--------|
+| 60% | Surfaces, body text | `--dnd-bg`, `--dnd-surface`, `--dnd-text` |
+| 30% | Primary actions, active nav | `--dnd-brand`, `--dnd-brand-muted` |
+| 10% | Status only | `--dnd-accent-danger`, `--dnd-accent-warning`, `--dnd-accent-link` |
+
+## Buttons (semantic — one intent, one class)
+
+| Intent | Class |
+|--------|--------|
+| Primary CTA | `btn btn-primary` |
+| Secondary / cancel | `btn btn-outline-secondary` or `btn btn-secondary` |
+| Destructive (delete, clear all) | `btn btn-danger` |
+| Table icon actions | `btn btn-outline-secondary btn-xs` |
+
+**Do not use** `btn-success` or `btn-info` for CTAs (aliased in CSS during migration; remove from new Blade).
+
+**Filled vs outline:** page-level primary = filled; in-card secondary = outline; row actions = outline xs.
+
+## Forms
+
+- Text: `--dnd-text` on `--dnd-surface`
+- Placeholder: `--dnd-text-placeholder` (readable in both themes)
+- Focus ring: `--dnd-brand-muted`
+
+## Chrome
+
+- Header/footer/sidebar share `--dnd-surface` / `--dnd-sidebar-bg` per theme (no white header + dark sidebar split).
+- Header separator: shadow only (`--dnd-header-separator`), not a heavy border.
+- Radius: **4px** (`--dnd-radius`). No `rounded-3`/`rounded-4` on dashboard.
+
+## Load order (`layout-dashboard`)
+
+`dnd-tokens` → `dnd-components` → `dnd-forms` → `dnd-buttons` → `dnd-pages` → `dashboard.css` → `dnd-chrome`
+
+## Blade checklist
+
+1. `x-page-header` for page title; no extra `.app-content` / `.container` wrappers.
+2. Primary = `btn-primary` only.
+3. Bulk destructive = `btn-danger` (same as single delete).
+4. No inline page color themes; extend `dnd-pages.css` if needed.

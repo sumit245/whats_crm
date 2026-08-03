@@ -6,6 +6,7 @@ use App\Models\Blast;
 use App\Models\Campaign;
 use App\Models\SuppressionEntry;
 use App\Services\Impl\MetaCloudApiService;
+use App\Services\LinkTrackerService;
 use App\Services\MetaRateLimiter;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -108,6 +109,13 @@ class ProcessBlastJob implements ShouldQueue
                 ]);
             } else {
                 $msg = is_array($blast->message) ? ($blast->message['text'] ?? '') : $blast->message;
+
+                // Wrap any URLs in the message with tracked redirect links
+                $tracker = new LinkTrackerService();
+                if ($tracker->hasUrls((string) $msg)) {
+                    $msg = $tracker->wrapUrls((string) $msg, $blast->user_id, $campaign->id, $blast->receiver);
+                }
+
                 $fakeRequest = (object) ['message' => $msg];
                 $result = $service->sendText($fakeRequest, $blast->receiver);
             }

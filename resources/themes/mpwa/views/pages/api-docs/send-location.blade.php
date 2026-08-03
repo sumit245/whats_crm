@@ -1,7 +1,6 @@
-<div class="tab-pane fade " id="sendlocation" role="tabpanel">
     <h3>Send Location API</h3>
     <p>Method : <code class="text-success">POST</code> | <code class="text-primary">GET</code></p>
-    <p>Endpoint: <code>{{ url('/') }}/send-location</code></p>
+    <p>Endpoint: <code>{{ $baseUrl }}/send-location</code></p>
 
     <p>Request Body : (JSON If POST) </p>
     <table class="table">
@@ -62,9 +61,8 @@
     <p>Example URL Request</p>
     <pre class="bg-dark text-white">
         <code class="json">
-{{ url('/') }}/send-location?api_key=1234567890&sender=62888xxxx&number=62888xxxx&latitude=24.121231&longitude=55.1121221
+{{ $baseUrl }}/send-location?api_key=1234567890&sender=62888xxxx&number=62888xxxx&latitude=24.121231&longitude=55.1121221
         </code>
       </pre>
 
 
-</div>

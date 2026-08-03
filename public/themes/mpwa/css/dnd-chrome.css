@@ -1,0 +1,262 @@
+/* =====================================================================
+   DnD Connect — app chrome (header, sidebar, footer, modals)
+   Loaded last. Buttons: dnd-buttons.css
+   ===================================================================== */
+
+html.light-theme .wrapper,
+html.semi-dark .wrapper,
+html.dark-theme .wrapper {
+    background: var(--dnd-bg) !important;
+}
+
+/* Ensure dark mode is visibly applied across core dashboard regions */
+html.dark-theme .wrapper,
+html.dark-theme .top-header .navbar,
+html.dark-theme .sidebar-wrapper,
+html.dark-theme .sidebar-wrapper .sidebar-header,
+html.dark-theme .page-content,
+html.dark-theme .page-content .card,
+html.dark-theme .form-control,
+html.dark-theme .form-select {
+    background-color: var(--dnd-surface) !important;
+    color: var(--dnd-text) !important;
+}
+
+html.dark-theme .wrapper,
+html.dark-theme .page-content {
+    background-color: var(--dnd-bg) !important;
+}
+
+/* ── Top header (hairline shadow, no heavy border) ─────────────────── */
+html.light-theme .top-header .navbar,
+html.semi-dark .top-header .navbar,
+html.dark-theme .top-header .navbar {
+    background-color: var(--dnd-surface) !important;
+    color: var(--dnd-text);
+    box-shadow: var(--dnd-header-separator) !important;
+    border-bottom: none !important;
+}
+
+html.light-theme .top-header .navbar .searchbar .form-control,
+html.semi-dark .top-header .navbar .searchbar .form-control,
+html.dark-theme .top-header .navbar .searchbar .form-control {
+    background-color: var(--dnd-bg) !important;
+    color: var(--dnd-text) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border-strong) !important;
+    border-radius: var(--dnd-radius) !important;
+}
+
+html.light-theme .top-header .navbar .searchbar .form-control:focus,
+html.semi-dark .top-header .navbar .searchbar .form-control:focus,
+html.dark-theme .top-header .navbar .searchbar .form-control:focus {
+    background-color: var(--dnd-surface) !important;
+    border-color: var(--dnd-brand) !important;
+    box-shadow: 0 0 0 2px var(--dnd-brand-muted) !important;
+}
+
+html.light-theme .top-header .navbar .nav-link,
+html.semi-dark .top-header .navbar .nav-link,
+html.dark-theme .top-header .navbar .nav-link {
+    color: var(--dnd-text-secondary) !important;
+}
+
+html.light-theme .top-header .navbar .dropdown-menu,
+html.semi-dark .top-header .navbar .dropdown-menu,
+html.dark-theme .top-header .navbar .dropdown-menu {
+    background: var(--dnd-surface) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border) !important;
+    color: var(--dnd-text) !important;
+    box-shadow: var(--dnd-shadow-md);
+}
+
+/* Notification bell badge — tight to icon */
+.dnd-notif-bell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.5rem !important;
+}
+
+.dnd-notif-badge {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    left: auto !important;
+    transform: translate(25%, -25%) !important;
+    font-size: 0.6rem !important;
+    min-width: 1rem;
+    height: 1rem;
+    line-height: 1rem;
+    padding: 0 0.25rem !important;
+}
+
+.dnd-notif-dropdown .dropdown-item {
+    color: var(--dnd-text) !important;
+}
+
+.dnd-notif-dropdown .dropdown-item .fw-semibold {
+    color: var(--dnd-text) !important;
+}
+
+.dnd-notif-dropdown .dropdown-item .text-muted {
+    color: var(--dnd-text-muted) !important;
+}
+
+.dnd-notif-dropdown .dropdown-header {
+    color: var(--dnd-text-secondary) !important;
+}
+
+/* ── Sidebar (all themes unified) ─────────────────────────────────── */
+html.light-theme .sidebar-wrapper,
+html.light-theme .sidebar-wrapper .sidebar-header,
+html.semi-dark .sidebar-wrapper,
+html.semi-dark .sidebar-wrapper .sidebar-header,
+html.dark-theme .sidebar-wrapper,
+html.dark-theme .sidebar-wrapper .sidebar-header {
+    background-color: var(--dnd-sidebar-bg) !important;
+    border-right: var(--dnd-border-width) solid var(--dnd-border) !important;
+}
+
+html.light-theme .sidebar-wrapper .sidebar-header,
+html.semi-dark .sidebar-wrapper .sidebar-header,
+html.dark-theme .sidebar-wrapper .sidebar-header {
+    border-bottom: var(--dnd-border-width) solid var(--dnd-border) !important;
+}
+
+html.light-theme .sidebar-wrapper .sidebar-header .logo-text,
+html.light-theme .sidebar-wrapper .sidebar-header .toggle-icon,
+html.semi-dark .sidebar-wrapper .sidebar-header .logo-text,
+html.semi-dark .sidebar-wrapper .sidebar-header .toggle-icon,
+html.dark-theme .sidebar-wrapper .sidebar-header .logo-text,
+html.dark-theme .sidebar-wrapper .sidebar-header .toggle-icon {
+    color: var(--dnd-text) !important;
+}
+
+html.light-theme .sidebar-wrapper .metismenu a,
+html.semi-dark .sidebar-wrapper .metismenu a,
+html.dark-theme .sidebar-wrapper .metismenu a {
+    color: var(--dnd-sidebar-text) !important;
+}
+
+html.light-theme .sidebar-wrapper .metismenu .mm-active > a,
+html.light-theme .sidebar-wrapper .metismenu a:hover,
+html.light-theme .sidebar-wrapper .metismenu li.active > a,
+html.semi-dark .sidebar-wrapper .metismenu .mm-active > a,
+html.semi-dark .sidebar-wrapper .metismenu a:active,
+html.semi-dark .sidebar-wrapper .metismenu a:focus,
+html.semi-dark .sidebar-wrapper .metismenu a:hover,
+html.semi-dark .sidebar-wrapper .metismenu li.active > a,
+html.dark-theme .sidebar-wrapper .metismenu .mm-active > a,
+html.dark-theme .sidebar-wrapper .metismenu a:active,
+html.dark-theme .sidebar-wrapper .metismenu a:focus,
+html.dark-theme .sidebar-wrapper .metismenu a:hover,
+html.dark-theme .sidebar-wrapper .metismenu li.active > a {
+    color: var(--dnd-brand) !important;
+    background: var(--dnd-brand-muted) !important;
+    border-left: 3px solid var(--dnd-brand) !important;
+    text-decoration: none;
+}
+
+.sidebar-wrapper select.form-control,
+.sidebar-wrapper .dnd-device-select {
+    background: var(--dnd-surface-raised) !important;
+    color: var(--dnd-text) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border-strong) !important;
+    border-radius: var(--dnd-radius) !important;
+    font-size: 0.8125rem;
+    padding: 0.4rem 0.5rem;
+    margin: 0 0.75rem;
+    width: calc(100% - 1.5rem);
+    max-width: calc(100% - 1.5rem);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+.footer {
+    background-color: var(--dnd-surface) !important;
+    color: var(--dnd-text-muted) !important;
+    border-top: none !important;
+    box-shadow: 0 -1px 0 var(--dnd-border-hairline);
+}
+
+/* ── Modals ───────────────────────────────────────────────────────── */
+.modal-content {
+    background: var(--dnd-surface);
+    color: var(--dnd-text);
+    border: var(--dnd-border-width) solid var(--dnd-border);
+    border-radius: var(--dnd-radius-md);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--dnd-border);
+}
+
+html.dark-theme .modal-content .btn-close,
+html.semi-dark .modal-content .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Widget icons — brand + neutral only */
+.widget-icon.bg-primary {
+    background-color: var(--dnd-brand) !important;
+}
+
+.widget-icon.bg-success,
+.widget-icon.bg-info {
+    background-color: var(--dnd-brand) !important;
+}
+
+.widget-icon.bg-warning {
+    background-color: var(--dnd-accent-warning) !important;
+}
+
+.widget-icon.bg-danger {
+    background-color: var(--dnd-accent-danger) !important;
+}
+
+.widget-icon.bg-orange {
+    background-color: var(--dnd-surface-raised) !important;
+    color: var(--dnd-brand) !important;
+    border: var(--dnd-border-width) solid var(--dnd-border);
+}
+
+/* Header theme toggle */
+.dnd-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    border: var(--dnd-border-width) solid var(--dnd-border-strong);
+    border-radius: var(--dnd-radius);
+    overflow: hidden;
+    margin: 0 0.25rem;
+}
+
+.dnd-theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--dnd-text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dnd-theme-btn + .dnd-theme-btn {
+    border-left: var(--dnd-border-width) solid var(--dnd-border-strong);
+}
+
+.dnd-theme-btn:hover {
+    color: var(--dnd-text);
+    background: var(--dnd-brand-subtle);
+}
+
+.dnd-theme-btn.is-active {
+    color: var(--dnd-brand);
+    background: var(--dnd-brand-muted);
+}

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\ContactEnrollController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\FlowController;
 use Illuminate\Http\Request;
@@ -38,6 +39,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function() {
 		// Phase G: Programmatic API trigger for chatbot flows
 		Route::post('/flow/trigger', [FlowController::class, 'apiTrigger'])->name('api.flow.trigger');
 	});
+
+	// Contact lifecycle — api_key only (no sender required)
+	Route::post('/contacts/enroll',     [ContactEnrollController::class, 'enroll'])->name('api.contacts.enroll');
+	Route::post('/contacts/unenroll',   [ContactEnrollController::class, 'unenroll'])->name('api.contacts.unenroll');
+	Route::post('/contacts/attributes', [ContactEnrollController::class, 'setAttributes'])->name('api.contacts.attributes');
 	Route::match(['post', 'get'], '/create-user', [ApiController::class, 'createUser']);
 	Route::match(['post', 'get'], '/info-user', [ApiController::class, 'infoUser']);
 	Route::match(['post', 'get'], '/info-devices', [ApiController::class, 'infoDevices']);

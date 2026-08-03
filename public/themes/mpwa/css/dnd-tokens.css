@@ -1,0 +1,152 @@
+/* =====================================================================
+   DnD Connect — design tokens v2 (60-30-10, light + dark)
+   Brand reference: docs/design-audit/brandkit-3x3.png
+   ===================================================================== */
+
+/* ── Light (html.light-theme) ─────────────────────────────────────── */
+:root,
+html.light-theme {
+    /* 60% — neutral surfaces */
+    --dnd-bg: #f0f2f5;
+    --dnd-surface: #ffffff;
+    --dnd-surface-raised: #f7f8fa;
+    --dnd-text: #111b21;
+    --dnd-text-on-surface: #111b21;
+    --dnd-text-secondary: #667781;
+    --dnd-text-muted: #8696a0;
+    --dnd-text-placeholder: #667781;
+    --dnd-border: rgba(17, 27, 33, 0.08);
+    --dnd-border-strong: rgba(17, 27, 33, 0.14);
+    --dnd-border-hairline: rgba(17, 27, 33, 0.06);
+    --dnd-header-separator: 0 1px 2px rgba(17, 27, 33, 0.06);
+
+    /* 30% — WhatsApp green */
+    --dnd-brand: #128c7e;
+    --dnd-brand-hover: #0f7468;
+    --dnd-brand-active: #0d655b;
+    --dnd-brand-rgb: 18, 140, 126;
+    --dnd-brand-bright: #25d366;
+    --dnd-brand-muted: rgba(18, 140, 126, 0.1);
+    --dnd-brand-subtle: rgba(18, 140, 126, 0.06);
+
+    /* Buttons */
+    --dnd-btn-primary-bg: var(--dnd-brand);
+    --dnd-btn-primary-hover: var(--dnd-brand-hover);
+    --dnd-btn-primary-active: var(--dnd-brand-active);
+    --dnd-btn-secondary-bg: #e9edef;
+    --dnd-btn-secondary-text: #111b21;
+    --dnd-btn-secondary-border: rgba(17, 27, 33, 0.12);
+    --dnd-btn-danger-bg: #dc3545;
+    --dnd-btn-danger-hover: #bb2d3b;
+
+    /* 10% — accents */
+    --dnd-accent-link: #027eb5;
+    --dnd-accent-info: #027eb5;
+    --dnd-accent-success: #128c7e;
+    --dnd-accent-warning: #e9a23b;
+    --dnd-accent-danger: #dc3545;
+
+    /* Chat */
+    --dnd-chat-panel: #ffffff;
+    --dnd-chat-thread: #efeae2;
+    --dnd-chat-bubble-out: #d9fdd3;
+    --dnd-chat-bubble-in: #ffffff;
+
+    /* Shape & space */
+    --dnd-radius: 4px;
+    --dnd-radius-sm: 3px;
+    --dnd-radius-md: 4px;
+    --dnd-radius-pill: 999px;
+    --dnd-border-width: 1px;
+    --dnd-shadow-sm: 0 1px 2px rgba(17, 27, 33, 0.06);
+    --dnd-shadow-md: 0 2px 6px rgba(17, 27, 33, 0.08);
+
+    --dnd-space-xs: 0.25rem;
+    --dnd-space-sm: 0.5rem;
+    --dnd-space-md: 0.75rem;
+    --dnd-space-lg: 1rem;
+    --dnd-space-xl: 1.25rem;
+    --dnd-gutter: 1rem;
+    --dnd-stack: 0.75rem;
+
+    /* Chrome */
+    --dnd-sidebar-bg: #ffffff;
+    --dnd-sidebar-text: #667781;
+}
+
+/* ── Dark (html.dark-theme) ───────────────────────────────────────── */
+html.dark-theme {
+    --dnd-bg: #111b21;
+    --dnd-surface: #202c33;
+    --dnd-surface-raised: #2a3942;
+    --dnd-text: #e9edef;
+    --dnd-text-on-surface: #e9edef;
+    --dnd-text-secondary: #aebac1;
+    --dnd-text-muted: #8696a0;
+    --dnd-text-placeholder: #8696a0;
+    --dnd-border: rgba(255, 255, 255, 0.08);
+    --dnd-border-strong: rgba(255, 255, 255, 0.14);
+    --dnd-border-hairline: rgba(255, 255, 255, 0.06);
+    --dnd-header-separator: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    --dnd-brand-muted: rgba(37, 211, 102, 0.12);
+    --dnd-brand-subtle: rgba(37, 211, 102, 0.06);
+
+    --dnd-btn-secondary-bg: #2a3942;
+    --dnd-btn-secondary-text: #e9edef;
+    --dnd-btn-secondary-border: rgba(255, 255, 255, 0.12);
+    --dnd-btn-danger-hover: #c82333;
+
+    --dnd-chat-panel: #202c33;
+    --dnd-chat-thread: #0b141a;
+    --dnd-chat-bubble-out: #005c4b;
+    --dnd-chat-bubble-in: #202c33;
+
+    --dnd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --dnd-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+    --dnd-sidebar-bg: #0b141a;
+    --dnd-sidebar-text: #aebac1;
+}
+
+/* Legacy semi-dark: treat as dark (no hybrid white header) */
+html.semi-dark {
+    --dnd-bg: #111b21;
+    --dnd-surface: #202c33;
+    --dnd-surface-raised: #2a3942;
+    --dnd-text: #e9edef;
+    --dnd-text-on-surface: #e9edef;
+    --dnd-text-secondary: #aebac1;
+    --dnd-text-muted: #8696a0;
+    --dnd-text-placeholder: #8696a0;
+    --dnd-border: rgba(255, 255, 255, 0.08);
+    --dnd-border-strong: rgba(255, 255, 255, 0.14);
+    --dnd-border-hairline: rgba(255, 255, 255, 0.06);
+    --dnd-header-separator: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --dnd-brand-muted: rgba(37, 211, 102, 0.12);
+    --dnd-brand-subtle: rgba(37, 211, 102, 0.06);
+    --dnd-btn-secondary-bg: #2a3942;
+    --dnd-btn-secondary-text: #e9edef;
+    --dnd-btn-secondary-border: rgba(255, 255, 255, 0.12);
+    --dnd-chat-panel: #202c33;
+    --dnd-chat-thread: #0b141a;
+    --dnd-chat-bubble-out: #005c4b;
+    --dnd-chat-bubble-in: #202c33;
+    --dnd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --dnd-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --dnd-sidebar-bg: #0b141a;
+    --dnd-sidebar-text: #aebac1;
+}
+
+/* Legacy aliases */
+:root {
+    --mpwa-brand: var(--dnd-brand);
+    --mpwa-brand-rgb: var(--dnd-brand-rgb);
+    --mpwa-accent: var(--dnd-brand-bright);
+    --mpwa-radius: var(--dnd-radius-md);
+    --mpwa-radius-sm: var(--dnd-radius);
+    --mpwa-gutter: var(--dnd-gutter);
+    --mpwa-border: var(--dnd-border);
+    --mpwa-card-shadow: var(--dnd-shadow-sm);
+    --mpwa-card-shadow-hover: var(--dnd-shadow-md);
+}

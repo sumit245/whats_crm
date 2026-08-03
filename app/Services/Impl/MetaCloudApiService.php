@@ -131,16 +131,63 @@ class MetaCloudApiService implements WhatsappService
 
     /**
      * Send a template message for a blast record with resolved variables.
+     *
+     * Supported keys in template_variables JSON:
+     *   1, 2, 3 … (or body_1, body_2 …) → body text parameters
+     *   header_url                        → image/document/video link for HEADER component
+     *   header_type                       → "image" | "document" | "video" (default: image)
+     *   button_0_url_suffix               → URL suffix for first URL button (index 0)
+     *   button_1_url_suffix               → URL suffix for second URL button (index 1), etc.
      */
     public function sendBlastTemplate(Blast $blast, array $templateMeta): object
     {
-        $variables = $blast->template_variables ?? [];
+        $variables  = $blast->template_variables ?? [];
         $components = [];
 
-        // Build body component with parameters
-        if (!empty($variables)) {
-            $parameters = array_map(fn ($val) => ['type' => 'text', 'text' => (string) $val], array_values($variables));
-            $components[] = ['type' => 'body', 'parameters' => $parameters];
+        // ── Body parameters (numeric keys 1,2,3… OR body_1, body_2…) ────────
+        $bodyParams = [];
+        foreach ($variables as $key => $val) {
+            if (is_numeric($key)) {
+                $bodyParams[(int) $key] = $val;
+            } elseif (preg_match('/^body_(\d+)$/', (string) $key, $m)) {
+                $bodyParams[(int) $m[1]] = $val;
+            }
+        }
+        if (!empty($bodyParams)) {
+            ksort($bodyParams);
+            $components[] = [
+                'type'       => 'body',
+                'parameters' => array_values(array_map(
+                    fn ($v) => ['type' => 'text', 'text' => (string) $v],
+                    $bodyParams
+                )),
+            ];
+        }
+
+        // ── Header component (image / document / video) ──────────────────────
+        if (!empty($variables['header_url'])) {
+            $headerType = $variables['header_type'] ?? 'image';
+            $components[] = [
+                'type'       => 'header',
+                'parameters' => [
+                    [
+                        'type'      => $headerType,
+                        $headerType => ['link' => (string) $variables['header_url']],
+                    ],
+                ],
+            ];
+        }
+
+        // ── Button URL suffix parameters ──────────────────────────────────────
+        foreach ($variables as $key => $val) {
+            if (preg_match('/^button_(\d+)_url_suffix$/', (string) $key, $m) && $val !== '') {
+                $components[] = [
+                    'type'       => 'button',
+                    'sub_type'   => 'url',
+                    'index'      => $m[1],
+                    'parameters' => [['type' => 'text', 'text' => (string) $val]],
+                ];
+            }
         }
 
         return $this->post("/{$this->device->phone_number_id}/messages", [
@@ -264,21 +311,71 @@ class MetaCloudApiService implements WhatsappService
         ]);
     }
 
+    public function sendCatalog(string $receiver, string $catalogId, string $body = '', string $footer = ''): object
+    {
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to'                => $receiver,
+            'type'              => 'interactive',
+            'interactive'       => [
+                'type'   => 'catalog_message',
+                'body'   => ['text' => $body ?: 'Browse our catalog'],
+                'action' => [
+                    'name'       => 'catalog_message',
+                    'parameters' => ['thumbnail_product_retailer_id' => $catalogId],
+                ],
+            ],
+        ];
+
+        if ($footer) {
+            $payload['interactive']['footer'] = ['text' => $footer];
+        }
+
+        return $this->post("/{$this->device->phone_number_id}/messages", $payload);
+    }
+
     public function sendPoll($request, $receiver): object|bool
+    {
+        // Meta Cloud API has no native poll type; we simulate with an interactive list.
+        // List rows: max 10 total, title max 24 chars.
+        $options = array_slice((array) $request->option, 0, 10);
+        $rows    = array_values(array_map(fn ($opt, $i) => [
+            'id'    => 'vote_' . $i,
+            'title' => mb_substr((string) $opt, 0, 24),
+        ], $options, array_keys($options)));
+
+        return $this->post("/{$this->device->phone_number_id}/messages", [
+            'messaging_product' => 'whatsapp',
+            'to'                => $receiver,
+            'type'              => 'interactive',
+            'interactive'       => [
+                'type'   => 'list',
+                'body'   => ['text' => $request->name ?? 'Poll'],
+                'action' => [
+                    'button'   => 'Vote',
+                    'sections' => [[
+                        'title' => mb_substr((string) ($request->name ?? 'Options'), 0, 24),
+                        'rows'  => $rows,
+                    ]],
+                ],
+            ],
+        ]);
+    }
+
+    public function sendCtaUrl(string $receiver, string $url, string $displayText = 'Open Link', string $body = ''): object
     {
         return $this->post("/{$this->device->phone_number_id}/messages", [
             'messaging_product' => 'whatsapp',
             'to'                => $receiver,
             'type'              => 'interactive',
             'interactive'       => [
-                'type'   => 'nfm_reply',
-                'body'   => ['text' => $request->name ?? 'Poll'],
+                'type'   => 'cta_url',
+                'body'   => ['text' => $body ?: $displayText],
                 'action' => [
-                    'name'       => 'vote',
+                    'name'       => 'cta_url',
                     'parameters' => [
-                        'prompt_text' => $request->name ?? 'Vote',
-                        'options'     => array_map(fn ($o) => ['name' => $o], (array) $request->option),
-                        'max_choices' => $request->countable ?? 1,
+                        'display_text' => $displayText,
+                        'url'          => $url,
                     ],
                 ],
             ],

@@ -19,6 +19,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\MessagesHistoryController;
 use App\Http\Controllers\MetaHealthController;
+use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\MetaWebhookController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
@@ -35,9 +36,31 @@ use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User\TicketController as UserTicketController;
+use App\Http\Controllers\ContactTimelineController;
+use App\Http\Controllers\LinkClickController;
+use App\Http\Controllers\OptInSettingController;
 use App\Http\Controllers\SuppressionController;
 use App\Http\Controllers\SegmentController;
+use App\Http\Controllers\AgentInvitationController;
 use App\Http\Controllers\FlowController;
+use App\Http\Controllers\FlowAnalyticsController;
+use App\Http\Controllers\DripSequenceController;
+use App\Http\Controllers\CampaignCalendarController;
+use App\Http\Controllers\AbTestController;
+use App\Http\Controllers\CampaignCompareController;
+use App\Http\Controllers\ChatSettingController;
+use App\Http\Controllers\CatalogueController;
+use App\Http\Controllers\WaLinkController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\InboundWebhookController;
+use App\Http\Controllers\Ads\AdDashboardController;
+use App\Http\Controllers\Ads\AdChannelsController;
+use App\Http\Controllers\Ads\AdCampaignsController;
+use App\Http\Controllers\Ads\AdCreativesController;
+use App\Http\Controllers\Ads\AdAnalyticsController;
+use App\Http\Controllers\Ads\AdAudiencesController;
+use App\Http\Controllers\Ads\AdAbTestController;
+use App\Http\Controllers\Ads\AdOAuthController;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -47,6 +70,28 @@ require_once 'custom-route.php';
 // Meta Cloud API Webhook — outside auth + localization, no CSRF
 Route::get('/webhook/meta', [MetaWebhookController::class, 'verify'])->name('meta.webhook.verify');
 Route::post('/webhook/meta', [MetaWebhookController::class, 'receive'])->name('meta.webhook.receive');
+
+// Ads Manager OAuth callbacks — no locale prefix so redirect URIs are stable
+// Register these exact URLs in Meta App / LinkedIn Developer App dashboards:
+//   Meta:     {APP_URL}/ads/oauth/meta/callback
+//   LinkedIn: {APP_URL}/ads/oauth/linkedin/callback
+Route::middleware('auth')->prefix('ads/oauth')->name('ads.oauth.')->group(function () {
+    Route::get('/meta/redirect',        [AdOAuthController::class, 'metaRedirect'])    ->name('meta.redirect');
+    Route::get('/meta/callback',        [AdOAuthController::class, 'metaCallback'])    ->name('meta.callback');
+    Route::post('/meta/setup',          [AdOAuthController::class, 'metaSetup'])       ->name('meta.setup');
+    Route::get('/linkedin/redirect',    [AdOAuthController::class, 'linkedinRedirect'])->name('linkedin.redirect');
+    Route::get('/linkedin/callback',    [AdOAuthController::class, 'linkedinCallback'])->name('linkedin.callback');
+    Route::post('/linkedin/setup',      [AdOAuthController::class, 'linkedinSetup'])   ->name('linkedin.setup');
+});
+
+// Public widget script — served by token, no auth required
+Route::get('/w/{token}.js', [IntegrationController::class, 'serveWidget'])->name('widget.serve');
+
+// Click tracking redirect — public, no auth, no CSRF
+Route::get('/t/{slug}', [LinkClickController::class, 'redirect'])->name('link.click');
+
+// Inbound webhooks — public, no auth, no CSRF (token in URL is the secret)
+Route::post('/wh/{token}', [InboundWebhookController::class, 'receive'])->name('webhook.inbound');
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
@@ -70,12 +115,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager');
         Route::get('/filemanager', fn () => redirect('/' . LaravelLocalization::getCurrentLocale() . '/laravel-filemanager'))->name('filemanager');
 
-        // Devices (home)
-        Route::get('/home', [HomeController::class, 'index'])->name('home');
-        Route::post('/home', [HomeController::class, 'store'])->name('addDevice');
-        Route::delete('/home', [HomeController::class, 'destroy'])->name('deleteDevice');
-        Route::post('/home/setSessionSelectedDevice', [HomeController::class, 'setSelectedDeviceSession'])->name('home.setSessionSelectedDevice');
-        Route::post('/home/sethook', [HomeController::class, 'setHook'])->name('setHook');
+        // Devices (home) — owner only
+        Route::get('/home', [HomeController::class, 'index'])->name('home')->middleware('no.agent');
+        Route::post('/home', [HomeController::class, 'store'])->name('addDevice')->middleware('no.agent');
+        Route::delete('/home', [HomeController::class, 'destroy'])->name('deleteDevice')->middleware('no.agent');
+        Route::post('/home/setSessionSelectedDevice', [HomeController::class, 'setSelectedDeviceSession'])->name('home.setSessionSelectedDevice')->middleware('no.agent');
+        Route::post('/home/sethook', [HomeController::class, 'setHook'])->name('setHook')->middleware('no.agent');
 
         // Auto-reply
         Route::get('/autoreply', [AutoreplyController::class, 'index'])->name('autoreply')->middleware('permissions');
@@ -90,6 +135,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/get-phonebook', [TagController::class, 'getPhonebook'])->name('getPhonebook');
         Route::delete('/clear-phonebook', [TagController::class, 'clearPhonebook'])->name('clearPhonebook');
         Route::get('get-contact/{id}', [ContactController::class, 'getContactByTagId']);
+        Route::get('/contacts/search',  [ContactController::class, 'search'])->name('contacts.search');
         Route::post('/contact/store', [ContactController::class, 'store'])->name('contact.store');
         Route::post('/contact/import', [ContactController::class, 'import'])->name('import'); // phonebook modal import
         Route::delete('/contact/delete/{contact:id}', [ContactController::class, 'destroy'])->name('contact.delete');
@@ -100,6 +146,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::post('fetch-groups', [TagController::class, 'fetchGroups'])->name('fetch.groups');
 
         // Contact import (CSV/Excel)
+        Route::get('/contacts',                   [ContactTimelineController::class, 'index'])->name('contacts.directory');
+        Route::get('/contacts/{number}/timeline', [ContactTimelineController::class, 'show'])->name('contact.timeline');
         Route::get('/contacts/import', [ContactImportController::class, 'index'])->name('contacts.import');
         Route::post('/contacts/import/preview', [ContactImportController::class, 'preview'])->name('contacts.import.preview');
         Route::post('/contacts/import', [ContactImportController::class, 'import'])->name('contacts.import.store');
@@ -109,22 +157,26 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/templates/create', [TemplateController::class, 'create'])->name('templates.create');
         Route::post('/templates', [TemplateController::class, 'store'])->name('templates.store');
         Route::post('/templates/sync', [TemplateController::class, 'sync'])->name('templates.sync');
+        Route::get('/templates/library',        [TemplateController::class, 'library'])      ->name('templates.library');
+        Route::post('/templates/library/sync', [TemplateController::class, 'librarySync'])  ->name('templates.library.sync');
+        Route::get('/templates/library/fetch', [TemplateController::class, 'libraryFetch'])->name('templates.library.fetch');
+        Route::post('/templates/library/add',  [TemplateController::class, 'addFromLibrary'])->name('templates.library.add');
         Route::get('/templates/{id}', [TemplateController::class, 'show'])->name('templates.show');
         Route::post('/templates/{id}/refresh', [TemplateController::class, 'refreshStatus'])->name('templates.refresh');
         Route::delete('/templates/{id}', [TemplateController::class, 'destroy'])->name('templates.destroy');
 
-        // Campaigns
-        Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns')->middleware('permissions');
-        Route::get('/campaign/create', [CampaignController::class, 'create'])->name('campaign.create')->middleware('permissions');
-        Route::post('/campaign/store', [CampaignController::class, 'store'])->name('campaign.store')->middleware('permissions');
+        // Campaigns — owner only
+        Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns')->middleware('permissions', 'no.agent');
+        Route::get('/campaign/create', [CampaignController::class, 'create'])->name('campaign.create')->middleware('permissions', 'no.agent');
+        Route::post('/campaign/store', [CampaignController::class, 'store'])->name('campaign.store')->middleware('permissions', 'no.agent');
         // 'blast' is the legacy name used by the campaign AJAX forms
-        Route::post('/blast', [CampaignController::class, 'store'])->name('blast')->middleware('permissions');
-        Route::post('/campaign/pause/{id}', [CampaignController::class, 'pause'])->name('campaign.pause')->middleware('permissions');
-        Route::post('/campaign/resume/{id}', [CampaignController::class, 'resume'])->name('campaign.resume')->middleware('permissions');
-        Route::delete('/campaign/delete/{id}', [CampaignController::class, 'destroy'])->name('campaign.delete')->middleware('permissions');
-        Route::get('/campaign/show/{id}', [CampaignController::class, 'show'])->name('campaign.show')->middleware('permissions');
-        Route::delete('/campaign/clear', [CampaignController::class, 'destroyAll'])->name('campaigns.delete.all')->middleware('permissions');
-        Route::get('/campaign/blast/{campaign:id}', [BlastController::class, 'index'])->name('campaign.blasts')->middleware('permissions');
+        Route::post('/blast', [CampaignController::class, 'store'])->name('blast')->middleware('permissions', 'no.agent');
+        Route::post('/campaign/pause/{id}', [CampaignController::class, 'pause'])->name('campaign.pause')->middleware('permissions', 'no.agent');
+        Route::post('/campaign/resume/{id}', [CampaignController::class, 'resume'])->name('campaign.resume')->middleware('permissions', 'no.agent');
+        Route::delete('/campaign/delete/{id}', [CampaignController::class, 'destroy'])->name('campaign.delete')->middleware('permissions', 'no.agent');
+        Route::get('/campaign/show/{id}', [CampaignController::class, 'show'])->name('campaign.show')->middleware('permissions', 'no.agent');
+        Route::delete('/campaign/clear', [CampaignController::class, 'destroyAll'])->name('campaigns.delete.all')->middleware('permissions', 'no.agent');
+        Route::get('/campaign/blast/{campaign:id}', [BlastController::class, 'index'])->name('campaign.blasts')->middleware('permissions', 'no.agent');
 
         // AJAX template fetching for campaigns
         Route::get('/campaign/templates/{deviceId}', [CampaignController::class, 'getTemplatesForDevice'])->name('campaign.templates');
@@ -133,9 +185,14 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::post('/campaign/{id}/retarget', [CampaignController::class, 'retarget'])->name('campaign.retarget')->middleware('permissions');
         Route::get('/campaign/{id}/progress', [CampaignController::class, 'progress'])->name('campaign.progress');
 
+        // Opt-in / Opt-out settings
+        Route::get('/opt-in', [OptInSettingController::class, 'show'])->name('optin.show');
+        Route::post('/opt-in', [OptInSettingController::class, 'update'])->name('optin.update');
+
         // Suppression list (Phase C)
         Route::get('/suppression', [SuppressionController::class, 'index'])->name('suppression.index');
         Route::post('/suppression', [SuppressionController::class, 'store'])->name('suppression.store');
+        Route::post('/suppression/import', [SuppressionController::class, 'import'])->name('suppression.import');
         Route::delete('/suppression/{id}', [SuppressionController::class, 'destroy'])->name('suppression.destroy');
 
         // Segments (Phase E)
@@ -158,6 +215,31 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::post('/flows/{id}/toggle', [FlowController::class, 'toggleStatus'])->name('flows.toggle');
         Route::delete('/flows/{id}', [FlowController::class, 'destroy'])->name('flows.destroy');
         Route::post('/flows/{id}/duplicate', [FlowController::class, 'duplicate'])->name('flows.duplicate');
+        Route::get('/flows/{id}/analytics', [FlowAnalyticsController::class, 'show'])->name('flows.analytics');
+
+        // Drip Sequences
+        Route::get('/drip',                          [DripSequenceController::class, 'index'])->name('drip.index');
+        Route::get('/drip/create',                   [DripSequenceController::class, 'create'])->name('drip.create');
+        Route::post('/drip',                         [DripSequenceController::class, 'store'])->name('drip.store');
+        Route::get('/drip/{id}/edit',                [DripSequenceController::class, 'edit'])->name('drip.edit');
+        Route::put('/drip/{id}',                     [DripSequenceController::class, 'update'])->name('drip.update');
+        Route::delete('/drip/{id}',                  [DripSequenceController::class, 'destroy'])->name('drip.destroy');
+        Route::get('/drip/{id}/enrollments',         [DripSequenceController::class, 'enrollments'])->name('drip.enrollments');
+        Route::post('/drip/{id}/enroll',             [DripSequenceController::class, 'enroll'])->name('drip.enroll');
+        Route::patch('/drip/enrollment/{id}/cancel', [DripSequenceController::class, 'cancelEnrollment'])->name('drip.cancel');
+
+        // Campaign Calendar
+        Route::get('/calendar',              [CampaignCalendarController::class, 'index'])->name('calendar.index');
+        Route::get('/calendar/events',       [CampaignCalendarController::class, 'events'])->name('calendar.events');
+        Route::patch('/calendar/{id}/reschedule', [CampaignCalendarController::class, 'reschedule'])->name('calendar.reschedule');
+
+        // A/B Tests
+        Route::get('/ab-tests',              [AbTestController::class, 'index'])->name('ab.index');
+        Route::get('/ab-tests/create',       [AbTestController::class, 'create'])->name('ab.create');
+        Route::post('/ab-tests',             [AbTestController::class, 'store'])->name('ab.store');
+        Route::get('/ab-tests/{id}',         [AbTestController::class, 'show'])->name('ab.show');
+        Route::post('/ab-tests/{id}/launch', [AbTestController::class, 'launch'])->name('ab.launch');
+        Route::delete('/ab-tests/{id}',      [AbTestController::class, 'destroy'])->name('ab.destroy');
 
         // Chat: bot handoff controls (Feature 2)
         Route::post('/chat/{id}/resolve-bot', [ChatController::class, 'resolveBot'])->name('chat.resolve.bot');
@@ -175,29 +257,53 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
         // Chat
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('/chat/settings',  [ChatSettingController::class, 'show'])  ->name('chat.settings');
+        Route::post('/chat/settings', [ChatSettingController::class, 'update'])->name('chat.settings.update');
         Route::post('/chat/start', [ChatController::class, 'start'])->name('chat.start');
+        // Conversation labels (must be before /{id} wildcard)
+        Route::get('/chat/labels',                   [ChatController::class, 'labelsIndex'])  ->name('chat.labels.index');
+        Route::post('/chat/labels/reorder',          [ChatController::class, 'labelsReorder'])->name('chat.labels.reorder');
+        Route::post('/chat/labels',                  [ChatController::class, 'labelsStore'])  ->name('chat.labels.store');
+        Route::put('/chat/labels/{labelId}',         [ChatController::class, 'labelsUpdate']) ->name('chat.labels.update');
+        Route::delete('/chat/labels/{labelId}',      [ChatController::class, 'labelsDestroy'])->name('chat.labels.destroy');
         Route::get('/chat/{id}', [ChatController::class, 'show'])->name('chat.show');
         Route::get('/chat/{id}/messages', [ChatController::class, 'messages'])->name('chat.messages');
         Route::post('/chat/{id}/send', [ChatController::class, 'send'])->name('chat.send');
         Route::post('/chat/{id}/send-template', [ChatController::class, 'sendTemplate'])->name('chat.send.template');
+        Route::post('/chat/{id}/upload-media',  [ChatController::class, 'uploadMedia'])->name('chat.upload.media');
+        Route::post('/chat/{id}/send-media',    [ChatController::class, 'sendMedia'])->name('chat.send.media');
+        Route::post('/chat/{id}/send-poll',     [ChatController::class, 'sendPoll'])->name('chat.send.poll');
+        Route::post('/chat/{id}/send-contact',  [ChatController::class, 'sendContact'])->name('chat.send.contact');
+        Route::post('/chat/{id}/send-catalog',  [ChatController::class, 'sendCatalog'])->name('chat.send.catalog');
+        Route::post('/chat/{id}/send-meeting',  [ChatController::class, 'sendMeetingLink'])->name('chat.send.meeting');
+
+        // Quick Replies
+        Route::resource('/quick-replies', \App\Http\Controllers\QuickReplyController::class)->only(['index','store','destroy']);
 
         // Feature 3: Multi-agent live chat
         Route::post('/chat/{id}/typing',   [ChatController::class, 'typing'])->name('chat.typing');
-        Route::post('/chat/{id}/notes',    [ChatController::class, 'storeNote'])->name('chat.notes.store');
+        Route::post('/chat/{id}/notes',                [ChatController::class, 'storeNote'])     ->name('chat.notes.store');
+        Route::put('/chat/{id}/notes/{noteId}',       [ChatController::class, 'updateNote'])     ->name('chat.notes.update');
+        Route::delete('/chat/{id}/notes/{noteId}',    [ChatController::class, 'destroyNote'])    ->name('chat.notes.destroy');
+        Route::post('/chat/{id}/notes/upload',        [ChatController::class, 'uploadNoteMedia'])->name('chat.notes.upload');
+        Route::get('/chat/{id}/notes/{noteId}/print', [ChatController::class, 'printNote'])      ->name('chat.notes.print');
         Route::post('/chat/{id}/attribute',[ChatController::class, 'saveAttribute'])->name('chat.attribute.save');
         Route::post('/chat/{id}/assign',   [ChatController::class, 'assign'])->name('chat.assign');
         Route::post('/chat/{id}/unassign', [ChatController::class, 'unassign'])->name('chat.unassign');
         Route::post('/chat/{id}/resolve',  [ChatController::class, 'resolve'])->name('chat.resolve');
+        Route::post('/chat/{id}/labels/{labelId}',   [ChatController::class, 'attachLabel'])->name('chat.labels.attach');
+        Route::delete('/chat/{id}/labels/{labelId}', [ChatController::class, 'detachLabel'])->name('chat.labels.detach');
 
-        // Feature 3: Agent & Team management
-        Route::get('/agents',              [\App\Http\Controllers\AgentController::class, 'index'])->name('agents.index');
-        Route::post('/agents',             [\App\Http\Controllers\AgentController::class, 'store'])->name('agents.store');
-        Route::put('/agents/{id}',         [\App\Http\Controllers\AgentController::class, 'update'])->name('agents.update');
-        Route::delete('/agents/{id}',      [\App\Http\Controllers\AgentController::class, 'destroy'])->name('agents.destroy');
+        // Feature 3: Agent & Team management — owner only
+        Route::get('/agents',              [\App\Http\Controllers\AgentController::class, 'index'])->name('agents.index')->middleware('no.agent');
+        Route::post('/agents',             [\App\Http\Controllers\AgentController::class, 'store'])->name('agents.store')->middleware('no.agent');
+        Route::put('/agents/{id}',         [\App\Http\Controllers\AgentController::class, 'update'])->name('agents.update')->middleware('no.agent');
+        Route::delete('/agents/{id}',      [\App\Http\Controllers\AgentController::class, 'destroy'])->name('agents.destroy')->middleware('no.agent');
         Route::post('/agents/{id}/status', [\App\Http\Controllers\AgentController::class, 'setStatus'])->name('agents.status');
+        Route::post('/agents/{id}/invite', [\App\Http\Controllers\AgentController::class, 'sendInvite'])->name('agents.invite')->middleware('no.agent');
         Route::post('/teams',              [\App\Http\Controllers\AgentController::class, 'storeTeam'])->name('teams.store');
         Route::put('/teams/{id}',          [\App\Http\Controllers\AgentController::class, 'updateTeam'])->name('teams.update');
-        Route::delete('/teams/{id}',       [\App\Http\Controllers\AgentController::class, 'destroyTeam'])->name('teams.destroy');
+        Route::delete('/teams/{id}',       [\App\Http\Controllers\AgentController::class, 'destroyTeam'])->name('teams.destroy')->middleware('no.agent');
 
         // Preview / form helpers (still used by autoreply)
         Route::post('/preview-message', [ShowMessageController::class, 'index'])->name('previewMessage');
@@ -207,9 +313,116 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         // REST API docs
         Route::get('/api-docs', RestapiController::class)->name('rest-api')->middleware('permissions');
 
+        // Integrations Hub
+        Route::get('/integrations',                      [IntegrationController::class, 'index'])          ->name('integrations.index');
+        Route::get('/integrations/custom-app',           [IntegrationController::class, 'customApp'])      ->name('integrations.custom-app')->middleware('no.agent');
+        Route::get('/integrations/widget',               [IntegrationController::class, 'widget'])         ->name('integrations.widget')->middleware('no.agent');
+        Route::post('/integrations/widget/activate',     [IntegrationController::class, 'activateWidget']) ->name('integrations.widget.activate')->middleware('no.agent');
+        Route::post('/integrations/widget/configure',    [IntegrationController::class, 'configureWidget'])->name('integrations.widget.configure')->middleware('no.agent');
+
+        // WhatsApp Link Generator
+        Route::get('/wa-link', [WaLinkController::class, 'index'])->name('wa-link.index');
+
+        // Webhook Ingestion — management (sources + triggers)
+        Route::prefix('webhooks')->name('webhooks.')->middleware('no.agent')->group(function () {
+            Route::get('/',                                           [WebhookController::class, 'index'])         ->name('index');
+            Route::post('/',                                          [WebhookController::class, 'store'])         ->name('store');
+            Route::delete('/{id}',                                    [WebhookController::class, 'destroy'])       ->name('destroy');
+            Route::post('/{id}/toggle',                               [WebhookController::class, 'toggleActive'])  ->name('toggle');
+            Route::get('/{id}',                                       [WebhookController::class, 'show'])          ->name('show');
+            Route::post('/{id}/triggers',                             [WebhookController::class, 'storeTrigger'])  ->name('triggers.store');
+            Route::delete('/{id}/triggers/{tid}',                     [WebhookController::class, 'destroyTrigger'])->name('triggers.destroy');
+            Route::post('/{id}/triggers/{tid}/toggle',                [WebhookController::class, 'toggleTrigger']) ->name('triggers.toggle');
+        });
+
+        // Catalogue Management
+        Route::prefix('catalogue')->name('catalogue.')->middleware('no.agent')->group(function () {
+            Route::get('/',                        [CatalogueController::class, 'index'])           ->name('index');
+            Route::get('/{id}',                    [CatalogueController::class, 'show'])            ->name('show');
+            Route::post('/sync',                   [CatalogueController::class, 'sync'])            ->name('sync');
+            Route::post('/create-catalogue',       [CatalogueController::class, 'createCatalogue']) ->name('create-catalogue');
+            Route::post('/{id}/sync-products',     [CatalogueController::class, 'syncProducts'])    ->name('sync-products');
+            Route::post('/{id}/link',              [CatalogueController::class, 'linkCatalogue'])   ->name('link');
+            Route::delete('/{id}',                 [CatalogueController::class, 'destroyCatalogue'])->name('destroy');
+            Route::post('/{id}/products',          [CatalogueController::class, 'createProduct'])   ->name('products.create');
+            Route::put('/products/{productId}',    [CatalogueController::class, 'updateProduct'])   ->name('products.update');
+            Route::delete('/products/{productId}', [CatalogueController::class, 'destroyProduct'])  ->name('products.destroy');
+            Route::get('/{id}/products-json',      [CatalogueController::class, 'productsJson'])    ->name('products-json');
+        });
+
+        // ── Ads Manager ──────────────────────────────────────────────────────────
+        Route::prefix('ads')->name('ads.')->middleware('permissions')->group(function () {
+            Route::get('/', [AdDashboardController::class, 'index'])->name('dashboard');
+
+            // Channels
+            Route::prefix('channels')->name('channels.')->group(function () {
+                Route::get('/',                         [AdChannelsController::class, 'index'])        ->name('index');
+                Route::post('/',                        [AdChannelsController::class, 'store'])        ->name('store');
+                Route::delete('/{channel}',             [AdChannelsController::class, 'destroy'])     ->name('destroy');
+                Route::post('/{channel}/verify',        [AdChannelsController::class, 'verify'])      ->name('verify');
+                Route::post('/{channel}/sync-metadata', [AdChannelsController::class, 'syncMetadata'])->name('sync-metadata');
+            });
+
+            // Campaigns
+            Route::prefix('campaigns')->name('campaigns.')->group(function () {
+                Route::get('/',                         [AdCampaignsController::class, 'index'])      ->name('index');
+                Route::get('/create',                   [AdCampaignsController::class, 'create'])     ->name('create');
+                Route::post('/',                        [AdCampaignsController::class, 'store'])      ->name('store');
+                Route::get('/{campaign}',               [AdCampaignsController::class, 'show'])       ->name('show');
+                Route::patch('/{campaign}',             [AdCampaignsController::class, 'update'])     ->name('update');
+                Route::delete('/{campaign}',            [AdCampaignsController::class, 'destroy'])    ->name('destroy');
+                Route::post('/{campaign}/launch',                          [AdCampaignsController::class, 'launch'])         ->name('launch');
+                Route::post('/{campaign}/pause',                           [AdCampaignsController::class, 'pause'])          ->name('pause');
+                Route::post('/{campaign}/sync-metrics',                    [AdCampaignsController::class, 'syncMetrics'])    ->name('sync-metrics');
+                Route::post('/{campaign}/add-placement',                   [AdCampaignsController::class, 'addPlacement'])   ->name('add-placement');
+                Route::post('/{campaign}/placements/{placement}/retry',    [AdCampaignsController::class, 'retryPlacement']) ->name('placement.retry');
+                Route::post('/{campaign}/placements/{placement}/creative', [AdCampaignsController::class, 'assignCreative'])->name('placement.assign-creative');
+            });
+
+            // Creatives
+            Route::prefix('creatives')->name('creatives.')->group(function () {
+                Route::get('/',                         [AdCreativesController::class, 'index'])  ->name('index');
+                Route::post('/',                        [AdCreativesController::class, 'store'])  ->name('store');
+                Route::get('/{creative}',               [AdCreativesController::class, 'show'])   ->name('show');
+                Route::match(['put','patch'], '/{creative}', [AdCreativesController::class, 'update'])->name('update');
+                Route::delete('/{creative}',            [AdCreativesController::class, 'destroy'])->name('destroy');
+                Route::get('/{creative}/preview',       [AdCreativesController::class, 'preview'])->name('preview');
+            });
+
+            // Analytics
+            Route::get('/analytics',                    [AdAnalyticsController::class, 'index'])    ->name('analytics');
+            Route::get('/analytics/export',             [AdAnalyticsController::class, 'export'])   ->name('analytics.export');
+            Route::post('/analytics/sync-all',          [AdAnalyticsController::class, 'syncAll'])  ->name('analytics.sync-all');
+            Route::get('/analytics/{placement}',        [AdAnalyticsController::class, 'placement'])->name('analytics.placement');
+
+            // Audiences
+            Route::prefix('audiences')->name('audiences.')->group(function () {
+                Route::get('/',                   [AdAudiencesController::class, 'index'])  ->name('index');
+                Route::post('/',                  [AdAudiencesController::class, 'store'])  ->name('store');
+                Route::delete('/{audience}',      [AdAudiencesController::class, 'destroy'])->name('destroy');
+                Route::post('/{audience}/sync',   [AdAudiencesController::class, 'sync'])   ->name('sync');
+            });
+
+            // A/B Tests
+            Route::prefix('ab-tests')->name('ab-tests.')->group(function () {
+                Route::get('/',                         [AdAbTestController::class, 'index'])  ->name('index');
+                Route::get('/create',                   [AdAbTestController::class, 'create']) ->name('create');
+                Route::post('/',                        [AdAbTestController::class, 'store'])  ->name('store');
+                Route::get('/{abTest}',                 [AdAbTestController::class, 'show'])   ->name('show');
+                Route::post('/{abTest}/launch',         [AdAbTestController::class, 'launch']) ->name('launch');
+                Route::post('/{abTest}/decide',         [AdAbTestController::class, 'decide']) ->name('decide');
+                Route::delete('/{abTest}',              [AdAbTestController::class, 'destroy'])->name('destroy');
+            });
+        });
+
         // Analytics
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('/analytics/campaign/{id}', [AnalyticsController::class, 'campaignDetail'])->name('analytics.campaign');
+        Route::get('/analytics/campaign/{id}/links', [AnalyticsController::class, 'campaignLinks'])->name('analytics.campaign.links');
+
+        // Campaign Comparison
+        Route::get('/campaigns/compare', [CampaignCompareController::class, 'index'])->name('campaigns.compare');
+        Route::post('/campaigns/compare/data', [CampaignCompareController::class, 'compare'])->name('campaigns.compare.data');
 
         // API Health
         Route::get('/meta/health', [MetaHealthController::class, 'index'])->name('meta.health');
@@ -293,6 +506,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
         Route::get('/permission-denied', fn () => view('theme::pages.permission'))->name('permission.denied');
     });
+
+    // Agent invitation accept (public — no auth required)
+    Route::get('/agent/accept/{token}',  [AgentInvitationController::class, 'show'])  ->name('agent.invite.show');
+    Route::post('/agent/accept/{token}', [AgentInvitationController::class, 'accept'])->name('agent.invite.accept');
 
     Route::middleware('guest')->group(function () {
         Route::get('/login', [LoginController::class, 'index'])->name('login');

@@ -6,17 +6,7 @@
    compatible with the semi-dark / light / dark theme switcher.
    ===================================================================== */
 
-:root {
-    --mpwa-brand: #128c7e;
-    --mpwa-brand-rgb: 18, 140, 126;
-    --mpwa-accent: #25d366;
-    --mpwa-radius: 0.75rem;
-    --mpwa-radius-sm: 0.5rem;
-    --mpwa-gutter: 1.5rem;
-    --mpwa-card-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
-    --mpwa-card-shadow-hover: 0 4px 12px rgba(16, 24, 40, 0.10);
-    --mpwa-border: rgba(0, 0, 0, 0.075);
-}
+/* Tokens live in dnd-tokens.css; legacy --mpwa-* aliases defined there */
 
 /* ------------------------------------------------------------------ */
 /* 1. Layout normalization                                            */
@@ -25,9 +15,7 @@
 /* a mix of .container (centered) and .container-fluid (full width).   */
 /* Neutralize them so every page renders at a single consistent width. */
 /* ------------------------------------------------------------------ */
-.page-content {
-    padding: var(--mpwa-gutter);
-}
+/* padding set in dnd-components.css */
 
 .page-content .app-content,
 .page-content .content-wrapper {
@@ -110,10 +98,7 @@
 /* 3. Cards                                                            */
 /* ------------------------------------------------------------------ */
 .page-content .card {
-    border: 1px solid var(--mpwa-border);
-    border-radius: var(--mpwa-radius);
-    box-shadow: var(--mpwa-card-shadow);
-    margin-bottom: var(--mpwa-gutter);
+    margin-bottom: var(--dnd-stack);
     transition: box-shadow 0.15s ease-in-out;
 }
 
@@ -175,6 +160,30 @@
     white-space: nowrap;
     padding-top: 0.85rem;
     padding-bottom: 0.85rem;
+}
+
+/* Bootstrap .table-light clashes with semi-dark / dark themes */
+html.semi-dark .page-content .table thead.table-light,
+html.dark-theme .page-content .table thead.table-light {
+    --bs-table-bg: rgba(255, 255, 255, 0.05);
+    --bs-table-color: inherit;
+    --bs-table-border-color: var(--mpwa-border);
+}
+
+html.light-theme .page-content .table thead.table-light {
+    --bs-table-bg: rgba(var(--mpwa-brand-rgb), 0.06);
+    --bs-table-color: inherit;
+}
+
+html.semi-dark .page-content .badge.bg-light,
+html.dark-theme .page-content .badge.bg-light {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    color: inherit !important;
+}
+
+html.semi-dark .page-content .btn-link,
+html.dark-theme .page-content .btn-link {
+    color: var(--mpwa-accent);
 }
 
 .page-content .table > tbody td {
@@ -393,4 +402,79 @@ html.semi-dark #smartwizard #smartwizard .nav .nav-link h6 {
 #variableHints .input-group-text {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.8rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* 10. Templates library (/templates)                                 */
+/* ------------------------------------------------------------------ */
+.templates-toolbar__grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+
+.templates-toolbar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.templates-toolbar__group--filters {
+    flex: 2 1 20rem;
+}
+
+.templates-toolbar__label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+    opacity: 0.6;
+    width: 100%;
+    flex: 0 0 100%;
+    margin-bottom: -0.15rem;
+}
+
+.templates-toolbar__group .form-select {
+    width: auto;
+    min-width: 7.5rem;
+    max-width: 14rem;
+    flex: 1 1 7.5rem;
+}
+
+.templates-toolbar__divider {
+    width: 1px;
+    align-self: stretch;
+    min-height: 2.5rem;
+    background: var(--mpwa-border);
+    margin: 0 0.25rem;
+}
+
+.templates-list-card .card-header {
+    padding: 0.75rem 1.25rem;
+}
+
+.templates-list-card .table .font-monospace {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.templates-list-card .template-actions {
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .page-header__actions {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+    }
+
+    .templates-list-card .table-responsive {
+        margin: 0 -0.25rem;
+    }
 }

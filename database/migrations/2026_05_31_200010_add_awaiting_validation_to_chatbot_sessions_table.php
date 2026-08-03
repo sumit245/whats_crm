@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('chatbot_sessions', function (Blueprint $table) {
-            $table->timestamp('expires_at')->nullable()->after('last_executed_at');
+            $table->string('awaiting_validation')->nullable()->after('awaiting_variable');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::table('chatbot_sessions', function (Blueprint $table) {
-            $table->dropColumn('expires_at');
+            $table->dropColumn('awaiting_validation');
         });
     }
 };

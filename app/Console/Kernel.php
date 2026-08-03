@@ -8,6 +8,7 @@ For details, visit https://creativecommons.org/licenses/by-nc-nd/4.0/.
 
 namespace App\Console;
 
+use App\Jobs\Ads\SyncAdMetricsJob;
 use App\Jobs\CheckDeviceHealthJob;
 use App\Models\Device;
 use Illuminate\Console\Scheduling\Schedule;
@@ -29,6 +30,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('templates:sync-statuses')->everyTenMinutes()->withoutOverlapping();
         $schedule->command('sessions:expire')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('chat:check-sla')->everyMinute()->withoutOverlapping();
+        $schedule->command('drip:process')->everyMinute()->withoutOverlapping();
+        $schedule->command('chat:auto-resolve')->everyThirtyMinutes()->withoutOverlapping();
+
+        // Sync ad metrics daily for all active placements
+        $schedule->job(new SyncAdMetricsJob())->dailyAt('06:00')->name('sync-ad-metrics')->withoutOverlapping();
 
         // Poll Meta API for device quality rating once per day per connected device
         $schedule->call(function () {

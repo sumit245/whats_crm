@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('awaiting_variable')->nullable();
             $table->unsignedTinyInteger('fallback_count')->default(0);
             $table->timestamp('last_executed_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
 
             $table->index(['conversation_id', 'state']);

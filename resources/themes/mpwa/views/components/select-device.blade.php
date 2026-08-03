@@ -1,5 +1,5 @@
                                <li class="my-4">
-                                   <select class="form-control" id="device_idd" name="device_id">
+                                   <select class="form-control dnd-device-select" id="device_idd" name="device_id">
                                        <option value="" disabled selected>{{__('Select Device')}}</option>
                                        @foreach ($numbers as $device)
                                            {{-- if session has selectedDevice and match = --}}

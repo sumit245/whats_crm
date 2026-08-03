@@ -1,20 +1,10 @@
 <x-layout-dashboard title="{{ __('Agents & Teams') }}">
 
-<div class="app-content py-3 px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h5 class="mb-0 fw-semibold">{{ __('Agents & Teams') }}</h5>
-            <small class="text-muted">{{ __('Manage your support agents, teams, and routing rules.') }}</small>
-        </div>
-    </div>
+    <x-page-header title="{{ __('Agents & Teams') }}"
+        subtitle="{{ __('Manage your support agents, teams, and routing rules.') }}"
+        :breadcrumb="[__('Agents & Teams')]" />
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
-            {{ session('success') }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    <div class="row g-4">
+    <div class="row g-3">
 
         {{-- ── TEAMS ──────────────────────────────────────────────────────── --}}
         <div class="col-md-5">
@@ -61,7 +51,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span class="fw-semibold small">{{ __('Agents') }}</span>
-                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newAgentModal">
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newAgentModal">
                         <i class="bi bi-person-plus"></i> {{ __('Add Agent') }}
                     </button>
                 </div>
@@ -74,6 +64,7 @@
                                 <th>{{ __('Team') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th>{{ __('Chats') }}</th>
+                                <th>{{ __('Login') }}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -82,7 +73,7 @@
                             <tr>
                                 <td>
                                     <div class="fw-semibold small">{{ $agent->name }}</div>
-                                    <div class="text-muted" style="font-size:11px">{{ $agent->email }}</div>
+                                    <div class="text-muted" style="font-size:11px">{{ $agent->email ?: '—' }}</div>
                                 </td>
                                 <td>
                                     @php
@@ -100,8 +91,26 @@
                                 <td>
                                     <small class="text-muted">{{ $agent->active_chat_count }}/{{ $agent->max_concurrent_chats }}</small>
                                 </td>
+                                <td>
+                                    @if($agent->agentUser)
+                                        <span class="badge bg-success-subtle text-success small"><i class="bi bi-person-check-fill me-1"></i>{{ __('Active') }}</span>
+                                    @elseif($agent->invitations->isNotEmpty())
+                                        <span class="badge bg-warning-subtle text-warning small"><i class="bi bi-envelope-fill me-1"></i>{{ __('Invited') }}</span>
+                                    @else
+                                        <span class="badge bg-secondary-subtle text-secondary small">{{ __('No login') }}</span>
+                                    @endif
+                                </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
+                                        @if($agent->email && !$agent->agentUser)
+                                        <form action="{{ route('agents.invite', $agent->id) }}" method="POST">
+                                            @csrf
+                                            <button class="btn btn-xs btn-outline-success"
+                                                title="{{ $agent->invitations->isNotEmpty() ? __('Resend invite') : __('Send login invite') }}">
+                                                <i class="bi bi-envelope{{ $agent->invitations->isNotEmpty() ? '-check' : '' }}"></i>
+                                            </button>
+                                        </form>
+                                        @endif
                                         <button class="btn btn-xs btn-outline-secondary"
                                             onclick="editAgent({{ $agent->id }}, '{{ addslashes($agent->name) }}', '{{ $agent->email }}', '{{ $agent->role }}', {{ $agent->team_id ?? 'null' }}, '{{ $agent->status }}', {{ $agent->max_concurrent_chats }})">
                                             <i class="bi bi-pencil"></i>
@@ -115,7 +124,7 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="6" class="text-center text-muted py-4 small">{{ __('No agents yet. Add your first agent above.') }}</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted py-4 small">{{ __('No agents yet. Add your first agent above.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -124,7 +133,6 @@
         </div>
 
     </div>
-</div>
 
 {{-- New Agent Modal --}}
 <div class="modal fade" id="newAgentModal" tabindex="-1">
@@ -141,7 +149,7 @@
                 </div>
                 <div class="modal-footer py-2">
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-sm btn-success">{{ __('Save') }}</button>
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Save') }}</button>
                 </div>
             </form>
         </div>
