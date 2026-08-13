@@ -4,6 +4,7 @@
     </IfModule>
 
     RewriteEngine On
+    RewriteBase /whatsapp
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
