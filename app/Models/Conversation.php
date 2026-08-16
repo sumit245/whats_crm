@@ -87,4 +87,21 @@ class Conversation extends Model
         $name = $this->contact_name ?: $this->contact_number;
         return strtoupper(mb_substr($name, 0, 1));
     }
+
+    /**
+     * Normalize a user-entered phone number to match WhatsApp's wa_id format
+     * (full E.164 digits, no leading '+'), which is what inbound webhooks use
+     * to look up/create conversations. Without this, a conversation started
+     * manually with a bare local number never matches that contact's replies.
+     */
+    public static function normalizeContactNumber(string $number): string
+    {
+        $digits = preg_replace('/\D/', '', $number);
+
+        if (strlen($digits) === 10) {
+            $digits = config('services.meta.default_country_code', '91') . $digits;
+        }
+
+        return $digits;
+    }
 }

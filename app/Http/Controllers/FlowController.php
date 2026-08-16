@@ -156,7 +156,7 @@ class FlowController extends Controller
                 [
                     'user_id'        => $request->user()->id,
                     'device_id'      => $device->id,
-                    'contact_number' => $request->phone_number,
+                    'contact_number' => Conversation::normalizeContactNumber($request->phone_number),
                 ],
                 ['contact_name' => $request->name ?? null]
             );

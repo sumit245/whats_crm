@@ -33,6 +33,7 @@ return [
     'meta' => [
         'app_secret' => env('META_APP_SECRET', ''),
         'webhook_verify_token' => env('META_WEBHOOK_VERIFY_TOKEN', ''),
+        'default_country_code' => env('DEFAULT_COUNTRY_CODE', '91'),
     ],
 
 ];

@@ -195,9 +195,20 @@ class ChatController extends Controller
             $conversation->update(['unread_count' => 0]);
         }
 
+        // Recent outbound statuses — lets the polling fallback refresh delivery
+        // ticks (sent/delivered/read) on already-rendered messages, since the
+        // socket push server isn't always available.
+        $recentStatuses = $conversation->messages()
+            ->where('direction', 'outbound')
+            ->orderByDesc('id')
+            ->take(20)
+            ->get(['id', 'status'])
+            ->map(fn ($m) => ['id' => $m->id, 'status' => $m->status]);
+
         return response()->json([
-            'messages' => $messages,
-            'unread'   => $conversation->fresh()->unread_count,
+            'messages'        => $messages,
+            'unread'          => $conversation->fresh()->unread_count,
+            'recent_statuses' => $recentStatuses,
         ]);
     }
 
@@ -680,7 +691,7 @@ class ChatController extends Controller
 
         $device = $request->user()->devices()->findOrFail($request->device_id);
 
-        $number = preg_replace('/[^0-9]/', '', $request->contact_number);
+        $number = Conversation::normalizeContactNumber($request->contact_number);
 
         $conversation = Conversation::firstOrCreate(
             [

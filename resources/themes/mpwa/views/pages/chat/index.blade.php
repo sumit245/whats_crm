@@ -1446,6 +1446,11 @@ function poll() {
                 if (msg.direction === 'outbound') updateTick(msg.id, msg.status);
             });
         }
+        if (data.recent_statuses) {
+            data.recent_statuses.forEach(function(s) {
+                updateTick(s.id, s.status);
+            });
+        }
     });
 }
 
