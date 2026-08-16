@@ -153,6 +153,14 @@
     color: var(--dnd-text-secondary);
 }
 
+/* Dense data tables (many columns, icon-only row actions — e.g. Agents)
+   opt into tighter cell padding than the 1.25rem default in dashboard.css,
+   which is sized for wider/simpler tables and overflows narrow columns. */
+.page-content .card-body.p-0 .table.table-tight > :not(caption) > * > * {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
 html.semi-dark .page-content .table thead.table-light,
 html.dark-theme .page-content .table thead.table-light {
     --bs-table-bg: var(--dnd-surface-raised);
