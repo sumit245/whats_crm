@@ -1460,10 +1460,19 @@ function poll() {
 // have executed) so `io` is defined before we connect.
 document.addEventListener('DOMContentLoaded', function () {
     @php
-        $parsedUrl = parse_url(env('APP_URL', 'http://localhost'));
-        $socketHost = ($parsedUrl['scheme'] ?? 'http') . '://' . ($parsedUrl['host'] ?? 'localhost');
+        // SOCKET_PUBLIC_URL lets the socket server live on its own (sub)domain
+        // — needed when it's deployed separately from the app, e.g. behind a
+        // hosting panel's Node.js App manager, which doesn't expose custom
+        // ports on the main domain. Falls back to same-host:PORT_NODE for
+        // setups (like local dev) where one process serves both.
+        $socketPublicUrl = env('SOCKET_PUBLIC_URL');
+        if (!$socketPublicUrl) {
+            $parsedUrl = parse_url(env('APP_URL', 'http://localhost'));
+            $socketHost = ($parsedUrl['scheme'] ?? 'http') . '://' . ($parsedUrl['host'] ?? 'localhost');
+            $socketPublicUrl = $socketHost . ':' . env('PORT_NODE', 3100);
+        }
     @endphp
-    var socketUrl = '{{ $socketHost }}:{{ env("PORT_NODE", 3100) }}';
+    var socketUrl = '{{ $socketPublicUrl }}';
     var connected = false;
 
     try {

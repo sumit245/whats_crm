@@ -14,7 +14,10 @@ const io = new Server(server, {
     pingTimeout: 10000,
     cors: { origin: true, methods: ["GET", "POST"], credentials: true },
 });
-const port = process.env.PORT_NODE || 3100;
+// Hostinger's Node.js App manager (Passenger) assigns its own port via
+// process.env.PORT; PORT_NODE is this project's own convention for a
+// manually-run server. Support both so the same file works either way.
+const port = process.env.PORT || process.env.PORT_NODE || 3100;
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
