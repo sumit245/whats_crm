@@ -377,10 +377,11 @@ class FlowEngine
             $tag = Tag::firstOrCreate(
                 ['user_id' => $this->conversation->user_id, 'name' => $tagName]
             );
-            Contact::firstOrCreate(
-                ['user_id' => $this->conversation->user_id, 'number' => $this->conversation->contact_number, 'tag_id' => $tag->id],
+            $contact = Contact::firstOrCreate(
+                ['user_id' => $this->conversation->user_id, 'number' => $this->conversation->contact_number],
                 ['name' => $this->conversation->contact_name ?? $this->conversation->contact_number]
             );
+            $contact->tags()->syncWithoutDetaching([$tag->id]);
         }
         return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];
     }
@@ -393,8 +394,8 @@ class FlowEngine
             if ($tag) {
                 Contact::where('user_id', $this->conversation->user_id)
                     ->where('number', $this->conversation->contact_number)
-                    ->where('tag_id', $tag->id)
-                    ->delete();
+                    ->first()
+                    ?->tags()->detach($tag->id);
             }
         }
         return ['action' => 'next', 'next_node_id' => $this->getNextNodeId($nodeId, 'output_1')];

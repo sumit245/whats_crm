@@ -54,10 +54,14 @@ class TagController extends Controller
             ]
         ]);
 
-        Tag::create([
+        $tag = Tag::create([
             'user_id' => $userId,
             'name' => $request->name,
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['error' => false, 'msg' => __('Success add tag!'), 'tag' => $tag]);
+        }
 
         return back()->with('alert',[
             'type' => 'success',
@@ -110,10 +114,11 @@ class TagController extends Controller
                     
                     foreach ($group->participants as $member) {
 					    $number = str_replace('@s.whatsapp.net','',$member->id);
-                        $cek = $request->user()->contacts()->where('tag_id',$tag->id)->where('number',$number)->count();
-                        if($cek < 1){
-						    $tag->contacts()->create(['user_id' =>$request->user()->id,'name' => $number,'number' => $number]);
-                        }
+                        $contact = $request->user()->contacts()->firstOrCreate(
+                            ['number' => $number],
+                            ['name' => $number]
+                        );
+                        $contact->tags()->syncWithoutDetaching([$tag->id]);
                     }
                 }
                 return back()->with('alert',[

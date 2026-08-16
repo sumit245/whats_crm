@@ -52,18 +52,40 @@ class SegmentEngine
                 break;
 
             case 'tag_name':
-                $query->{$method . 'Has'}('tag', function (Builder $q) use ($op, $value) {
-                    $this->applyStringOp($q, 'name', $op, $value, 'where');
+                $query->{$method . 'Has'}('tags', function (Builder $q) use ($op, $value) {
+                    $this->applyStringOp($q, 'tags.name', $op, $value, 'where');
                 });
                 break;
 
             case 'tag_id':
-                $query->{$method}('contacts.tag_id', '=', (int) $value);
+                $query->{$method . 'Has'}('tags', function (Builder $q) use ($value) {
+                    $q->where('tags.id', '=', (int) $value);
+                });
                 break;
 
             case 'created_at':
                 [$sqlOp, $resolvedValue] = $this->resolveDateOp($op, $value);
                 $query->{$method}('contacts.created_at', $sqlOp, $resolvedValue);
+                break;
+
+            case 'company':
+                $this->applyStringOp($query, 'contacts.company', $op, $value, $method);
+                break;
+
+            case 'email':
+                $this->applyStringOp($query, 'contacts.email', $op, $value, $method);
+                break;
+
+            case 'source':
+                $this->applyStringOp($query, 'contacts.source', $op, $value, $method);
+                break;
+
+            case 'address':
+                $this->applyStringOp($query, 'contacts.address', $op, $value, $method);
+                break;
+
+            case 'status':
+                $this->applyStringOp($query, 'contacts.status', $op, $value, $method);
                 break;
 
             // ── Behavioral delivery rules ──────────────────────────────────

@@ -18,6 +18,6 @@ class Tag extends Model
     protected $fillable = ['user_id','name'];
 
     public function contacts(){
-        return $this->hasMany(Contact::class);
+        return $this->belongsToMany(Contact::class, 'contact_tag');
     }
 }

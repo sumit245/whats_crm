@@ -79,27 +79,11 @@
                    </a>
 
                </li>
-               {{-- contacts directory --}}
-               <li class="{{ request()->is('contacts') ? 'active' : '' }}">
+               {{-- contacts directory (unified hub — also covers phonebook/import deep links) --}}
+               <li class="{{ request()->is('contacts') || request()->is('contacts/*') || request()->is('phonebook') ? 'active' : '' }}">
                    <a href="{{ route('contacts.directory') }}">
                        <div class="parent-icon"><i class="bi bi-people-fill"></i></div>
                        <div class="menu-title">{{__('Contacts')}}</div>
-                   </a>
-               </li>
-               {{-- phone book --}}
-               <li class="{{ request()->is('phonebook') || request()->is('contacts/import') ? 'active' : '' }}">
-                   <a href="{{ route('phonebook') }}">
-                       <div class="parent-icon"><i class="bi bi-telephone-fill"></i>
-                       </div>
-                       <div class="menu-title">{{__('Phone Book')}}</div>
-                   </a>
-               </li>
-               {{-- Contact Import --}}
-               <li class="{{ request()->is('contacts/import*') ? 'active' : '' }}">
-                   <a href="{{ route('contacts.import') }}">
-                       <div class="parent-icon"><i class="bi bi-file-earmark-spreadsheet-fill"></i>
-                       </div>
-                       <div class="menu-title">{{__('Import Contacts')}}</div>
                    </a>
                </li>
                {{-- Templates --}}

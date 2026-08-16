@@ -73,17 +73,16 @@ class ContactEnrollController extends Controller
         $contact = Contact::where('user_id', $user->id)->where('number', $number)->first();
 
         if ($contact) {
-            $updates = [];
-            if ($name)      $updates['name']   = $name;
-            if ($phonebook) $updates['tag_id']  = $phonebook->id;
-            if ($updates)   $contact->update($updates);
+            if ($name) $contact->update(['name' => $name]);
         } else {
             $contact = Contact::create([
                 'user_id' => $user->id,
                 'number'  => $number,
                 'name'    => $name ?: $number,
-                'tag_id'  => $phonebook?->id,
             ]);
+        }
+        if ($phonebook) {
+            $contact->tags()->syncWithoutDetaching([$phonebook->id]);
         }
 
         $result['name']      = $contact->name;
@@ -147,13 +146,12 @@ class ContactEnrollController extends Controller
         $result = ['number' => $number, 'removed_from_phonebook' => false,
                    'drip_cancelled' => 0, 'suppressed' => false];
 
-        // Remove from phonebook
-        if ($pbId = $request->input('phonebook_id')) {
-            $result['removed_from_phonebook'] = (bool) Contact::where('user_id', $user->id)
-                ->where('number', $number)->where('tag_id', $pbId)->delete();
-        } elseif ($request->boolean('remove_all_phonebooks')) {
-            $result['removed_from_phonebook'] = (bool) Contact::where('user_id', $user->id)
-                ->where('number', $number)->delete();
+        // Remove from phonebook(s) — unlinks only, the CRM contact record itself is kept
+        $contact = Contact::where('user_id', $user->id)->where('number', $number)->first();
+        if ($contact && ($pbId = $request->input('phonebook_id'))) {
+            $result['removed_from_phonebook'] = (bool) $contact->tags()->detach($pbId);
+        } elseif ($contact && $request->boolean('remove_all_phonebooks')) {
+            $result['removed_from_phonebook'] = (bool) $contact->tags()->detach();
         }
 
         // Cancel active drip enrollments

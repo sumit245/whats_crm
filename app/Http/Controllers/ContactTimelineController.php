@@ -22,11 +22,19 @@ class ContactTimelineController extends Controller
         $userId = $request->user()->id;
         $q      = trim($request->input('q', ''));
 
+        $phonebooks = $request->user()->phonebooks()->withCount('contacts')->orderBy('name')->get();
+
         $contacts = Contact::where('user_id', $userId)
-            ->with('tag:id,name')
+            ->with('tags:id,name')
             ->when($q, fn ($query) => $query
                 ->where('name',   'like', "%{$q}%")
-                ->orWhere('number', 'like', "%{$q}%"))
+                ->orWhere('number',  'like', "%{$q}%")
+                ->orWhere('company', 'like', "%{$q}%")
+                ->orWhere('email',   'like', "%{$q}%"))
+            ->when($request->filled('tag_id'), fn ($query) => $query
+                ->whereHas('tags', fn ($t) => $t->where('tags.id', $request->tag_id)))
+            ->when($request->filled('status'), fn ($query) => $query
+                ->where('status', $request->status))
             ->orderBy('name')
             ->paginate(30)
             ->withQueryString();
@@ -41,7 +49,7 @@ class ContactTimelineController extends Controller
             ->unique('contact_number')          // keep only latest per number
             ->keyBy('contact_number');
 
-        return view('theme::pages.contacts.directory', compact('contacts', 'q', 'convMap'));
+        return view('theme::pages.contacts.directory', compact('contacts', 'q', 'convMap', 'phonebooks'));
     }
 
     public function show(Request $request, string $number)
@@ -49,12 +57,9 @@ class ContactTimelineController extends Controller
         $userId = $request->user()->id;
 
         // ── Identity ────────────────────────────────────────────────────────
-        $phonebooks = Contact::where('user_id', $userId)
-            ->where('number', $number)
-            ->with('tag:id,name')
-            ->get();
-
-        $contactName = $phonebooks->first()?->name ?? $number;
+        $contact     = Contact::where('user_id', $userId)->where('number', $number)->with('tags:id,name')->first();
+        $phonebooks  = $contact?->tags ?? collect();
+        $contactName = $contact?->name ?? $number;
         $isSuppressed = SuppressionEntry::isSuppressed($userId, $number);
         $attributes   = ContactAttribute::allFor($userId, $number);
 
@@ -121,7 +126,7 @@ class ContactTimelineController extends Controller
         ];
 
         return view('theme::pages.contacts.timeline', compact(
-            'number', 'contactName', 'isSuppressed',
+            'number', 'contact', 'contactName', 'isSuppressed',
             'phonebooks', 'attributes', 'segments',
             'blasts', 'deliveryMap', 'rankToStatus',
             'clicks', 'conversations', 'notes',

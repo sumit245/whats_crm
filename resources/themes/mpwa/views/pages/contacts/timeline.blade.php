@@ -13,7 +13,7 @@
             <span class="badge bg-danger ms-2"><i class="bi bi-slash-circle me-1"></i>{{ __('Suppressed') }}</span>
         @endif
         @foreach($phonebooks as $pb)
-            <span class="badge bg-secondary ms-1">{{ $pb->tag?->name ?? '—' }}</span>
+            <span class="badge bg-secondary ms-1">{{ $pb->name }}</span>
         @endforeach
     </div>
     @php $latestConv = $conversations->first(); @endphp
@@ -83,8 +83,7 @@
                 @forelse($phonebooks as $pb)
                 <div class="d-flex align-items-center gap-2 py-1 border-bottom" style="font-size:0.82rem">
                     <i class="bi bi-person-lines-fill text-muted"></i>
-                    <span>{{ $pb->tag?->name ?? '—' }}</span>
-                    <span class="ms-auto text-muted">{{ $pb->name }}</span>
+                    <span>{{ $pb->name }}</span>
                 </div>
                 @empty
                 <div class="text-muted small py-1">{{ __('Not in any phonebook') }}</div>

@@ -71,9 +71,6 @@
                 <button class="btn btn-primary btn-sm add-contact" onclick="addContact()">
                     {{__('Add Contact')}}
                 </button>
-                <button class="btn btn-outline-secondary btn-sm import-contact" onclick="importContact()">
-                    <i class="bi bi-upload"></i> {{__('Import')}}
-                </button>
                 <button class="btn btn-outline-secondary btn-sm export-contact" onclick="exportContact()">
                     <i class="bi bi-download"></i> {{__('Export')}}
                 </button>
@@ -156,42 +153,6 @@ document.querySelector('form[action="{{ route('tag.store') }}"]').addEventListen
         </div>
     </div>
     <!-- end modal add contact -->
-    <!-- modal import contact -->
-    <div class="modal fade" id="importContacts" tabindex="-1" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{{__('Import Contacts')}}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="import-contact-form" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <label for="fileContacts" class="form-label">{{__('File (xlsx )')}}</label>
-                        <input {{-- accept xlsx and csv --}} accept=".xlsx" type="file" name="fileContacts"
-                            class="form-control file-import" id="fileContacts" required>
-                        <div class="mt-2">
-                            <a href="{{ url('sample_contacts.xlsx') }}" download class="text-primary text-decoration-none">
-                                <i class="bi bi-download me-1"></i>{{ __('Download Sample Format') }}
-                            </a>
-                            <small class="text-muted d-block mt-1">{{ __('Columns: Name, Number (with country code, e.g. 919876543210)') }}</small>
-                        </div>
-
-                        <input type="hidden" name="tag_id" value="" class="import_phonebookid">
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{__('Cancel')}}</button>
-                    <button type="submit" name="submit" class="btn btn-primary">{{__('Import')}}</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {{-- end modal import contact --}}
-
-    </div>
-    <!-- end modal import contact -->
 
     </div>
     <script src="{{ asset('js/phonebook.js') }}?v={{ time() }}"></script>

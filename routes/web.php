@@ -101,6 +101,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/', [IndexController::class, 'index'])->name('index');
     }
 
+    // Public REST API docs (no login required) — rendered in a guest-safe layout
+    Route::get('/api-docs', RestapiController::class)->name('rest-api');
+
     Route::middleware('2fa')->group(function () {
         Route::get('/2fa', [TwoFactorController::class, 'showVerify'])->name('2fa.verify');
         Route::post('/2fa', [TwoFactorController::class, 'verifyLogin'])->name('2fa.verify');
@@ -151,6 +154,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/contacts/import', [ContactImportController::class, 'index'])->name('contacts.import');
         Route::post('/contacts/import/preview', [ContactImportController::class, 'preview'])->name('contacts.import.preview');
         Route::post('/contacts/import', [ContactImportController::class, 'import'])->name('contacts.import.store');
+        Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contact.update');
+        Route::post('/contacts/{contact}/tags/{tag}', [ContactController::class, 'attachTag'])->name('contact.tags.attach');
+        Route::delete('/contacts/{contact}/tags/{tag}', [ContactController::class, 'unlinkFromTag'])->name('contact.tags.detach');
 
         // HSM Templates
         Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
@@ -310,8 +316,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/form-message/{type}', [ShowMessageController::class, 'getFormByType'])->name('formMessage');
         Route::get('/form-message-edit/{type}', [ShowMessageController::class, 'showEdit'])->name('formMessageEdit');
 
-        // REST API docs
-        Route::get('/api-docs', RestapiController::class)->name('rest-api')->middleware('permissions');
 
         // Integrations Hub
         Route::get('/integrations',                      [IntegrationController::class, 'index'])          ->name('integrations.index');

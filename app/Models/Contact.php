@@ -14,9 +14,16 @@ use Illuminate\Database\Eloquent\Model;
 class Contact extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','tag_id','name','number'];
 
-    public function tag(){
-        return $this->belongsTo(Tag::class);
+    public const STATUSES = ['Lead', 'Contacted', 'Customer', 'Churned'];
+
+    protected $fillable = [
+        'user_id', 'name', 'number',
+        'company', 'email', 'address', 'linkedin_url', 'facebook_url',
+        'website', 'source', 'status', 'remarks',
+    ];
+
+    public function tags(){
+        return $this->belongsToMany(Tag::class, 'contact_tag');
     }
 }

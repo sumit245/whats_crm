@@ -12,7 +12,7 @@
         </div>
         <div class="col-2 border-none d-flex align-items-center justify-content-center">
             <form action="{{ route('tag.delete') }}" method="POST"
-                onsubmit="return confirm('{{__('do you sure want to delete this tag? ( All contacts in this tag also will delete! )')}}')">
+                onsubmit="return confirm('{{__('Delete this phonebook? Contacts will be kept but unassigned from it.')}}')">
                 @method('delete')
                 @csrf
                 <input type="hidden" name="id" value="{{ $phonebook->id }}">

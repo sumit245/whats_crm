@@ -66,16 +66,16 @@ class OptInService
 
             // Add to target phonebook if configured
             if ($settings->opt_in_phonebook_id) {
-                Contact::updateOrCreate(
+                $contact = Contact::updateOrCreate(
                     [
                         'user_id' => $device->user_id,
                         'number'  => $conversation->contact_number,
                     ],
                     [
-                        'tag_id' => $settings->opt_in_phonebook_id,
-                        'name'   => $conversation->contact_name ?? $conversation->contact_number,
+                        'name' => $conversation->contact_name ?? $conversation->contact_number,
                     ]
                 );
+                $contact->tags()->syncWithoutDetaching([$settings->opt_in_phonebook_id]);
             }
 
             Log::info("OptIn: {$conversation->contact_number} opted in for user #{$device->user_id}.");

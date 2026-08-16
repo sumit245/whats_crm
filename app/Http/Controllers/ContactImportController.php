@@ -44,8 +44,18 @@ class ContactImportController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file'      => 'required|file|mimes:csv,xlsx,xls|max:10240',
-            'phone_col' => 'required|integer|min:0',
+            'file'         => 'required|file|mimes:csv,xlsx,xls|max:10240',
+            'phone_col'    => 'required|integer|min:0',
+            'name_col'     => 'nullable|integer|min:0',
+            'company_col'  => 'nullable|integer|min:0',
+            'email_col'    => 'nullable|integer|min:0',
+            'address_col'  => 'nullable|integer|min:0',
+            'linkedin_col' => 'nullable|integer|min:0',
+            'facebook_col' => 'nullable|integer|min:0',
+            'website_col'  => 'nullable|integer|min:0',
+            'source_col'   => 'nullable|integer|min:0',
+            'status_col'   => 'nullable|integer|min:0',
+            'remarks_col'  => 'nullable|integer|min:0',
         ]);
 
         // Resolve or create phonebook
@@ -56,11 +66,22 @@ class ContactImportController extends Controller
             $tag = $request->user()->phonebooks()->findOrFail($request->phonebook_id);
         }
 
+        $colOrNull = fn (string $key) => $request->filled($key) ? (int) $request->input($key) : null;
+
         $importer = new ContactBulkImport(
-            tagId:    $tag->id,
-            userId:   $request->user()->id,
-            phoneCol: (int) $request->phone_col,
-            nameCol:  $request->name_col !== null ? (int) $request->name_col : null,
+            tagId:        $tag->id,
+            userId:       $request->user()->id,
+            phoneCol:     (int) $request->phone_col,
+            nameCol:      $colOrNull('name_col'),
+            companyCol:   $colOrNull('company_col'),
+            emailCol:     $colOrNull('email_col'),
+            addressCol:   $colOrNull('address_col'),
+            linkedinCol:  $colOrNull('linkedin_col'),
+            facebookCol:  $colOrNull('facebook_col'),
+            websiteCol:   $colOrNull('website_col'),
+            sourceCol:    $colOrNull('source_col'),
+            statusCol:    $colOrNull('status_col'),
+            remarksCol:   $colOrNull('remarks_col'),
         );
 
         try {

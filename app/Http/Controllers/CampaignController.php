@@ -347,13 +347,13 @@ class CampaignController extends Controller
             $tagName = 'Retarget: ' . $campaign->name . ' [' . $filter . '] ' . now()->format('m/d H:i');
             $tag = Tag::create(['user_id' => $request->user()->id, 'name' => $tagName]);
 
-            $contactRows = $receivers->map(fn ($number) => [
-                'user_id' => $request->user()->id,
-                'tag_id'  => $tag->id,
-                'number'  => $number,
-                'name'    => $number,
-            ]);
-            Contact::insert($contactRows->toArray());
+            foreach ($receivers as $number) {
+                $contact = Contact::firstOrCreate(
+                    ['user_id' => $request->user()->id, 'number' => $number],
+                    ['name' => $number]
+                );
+                $contact->tags()->syncWithoutDetaching([$tag->id]);
+            }
 
             return response()->json([
                 'error'   => false,

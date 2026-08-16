@@ -103,7 +103,7 @@ class AbTestController extends Controller
         $variantMetrics = $test->variants->mapWithKeys(fn ($v) => [$v->id => $v->metrics()]);
 
         $contactCount = Contact::where('user_id', $userId)
-            ->where('tag_id', $test->phonebook_id)
+            ->whereHas('tags', fn ($q) => $q->where('tags.id', $test->phonebook_id))
             ->count();
 
         return view('theme::pages.ab.show', compact('test', 'variantMetrics', 'contactCount'));
@@ -124,7 +124,7 @@ class AbTestController extends Controller
 
         // Get and shuffle contacts from phonebook
         $contacts = Contact::where('user_id', $userId)
-            ->where('tag_id', $test->phonebook_id)
+            ->whereHas('tags', fn ($q) => $q->where('tags.id', $test->phonebook_id))
             ->pluck('number')
             ->shuffle()
             ->values();

@@ -2,9 +2,9 @@
 
     <x-page-header title="{{ __('Import Contacts from CSV / Excel') }}"
         subtitle="{{ __('Upload a spreadsheet, map columns, and bulk-import contacts into a phonebook.') }}"
-        :breadcrumb="[__('Phone Book'), __('Import')]">
-        <a href="{{ route('phonebook') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> {{ __('Phonebook') }}
+        :breadcrumb="[__('Contacts'), __('Import')]">
+        <a href="{{ route('contacts.directory') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> {{ __('Contacts') }}
         </a>
     </x-page-header>
 
@@ -89,10 +89,26 @@ const ROLE_OPTIONS = `
     <option value="skip">— {{ __('Skip') }}</option>
     <option value="phone">📱 {{ __('Phone Number') }}</option>
     <option value="name">👤 {{ __('Contact Name') }}</option>
+    <option value="company">🏢 {{ __('Company') }}</option>
+    <option value="email">✉️ {{ __('Email') }}</option>
+    <option value="address">📍 {{ __('Address') }}</option>
+    <option value="linkedin">🔗 {{ __('LinkedIn URL') }}</option>
+    <option value="facebook">🔗 {{ __('Facebook URL') }}</option>
+    <option value="website">🌐 {{ __('Website') }}</option>
+    <option value="source">🏷️ {{ __('Source') }}</option>
+    <option value="status">📌 {{ __('Status') }}</option>
+    <option value="remarks">📝 {{ __('Remarks') }}</option>
     <option value="var1">@{{1}} {{ __('Variable 1') }}</option>
     <option value="var2">@{{2}} {{ __('Variable 2') }}</option>
     <option value="var3">@{{3}} {{ __('Variable 3') }}</option>
 `;
+
+// role -> FormData field name (all *_col except phone/name which the backend already expects that way)
+const ROLE_COL_PARAM = {
+    phone: 'phone_col', name: 'name_col', company: 'company_col', email: 'email_col',
+    address: 'address_col', linkedin: 'linkedin_col', facebook: 'facebook_col',
+    website: 'website_col', source: 'source_col', status: 'status_col', remarks: 'remarks_col',
+};
 
 let uploadedHeaders = [];
 let uploadedRows = [];
@@ -146,11 +162,6 @@ function renderMapping() {
     uploadedHeaders.forEach((header, i) => {
         const sample = uploadedRows.map(r => r[i] ?? '').filter(Boolean).slice(0, 2).join(', ');
         // Auto-detect phone/name columns
-        const headerLower = String(header).toLowerCase();
-        let autoSelected = 'skip';
-        if (/phone|mobile|number|tel|hp|wa|whatsapp/.test(headerLower)) autoSelected = 'phone';
-        else if (/name|nama|contact/.test(headerLower)) autoSelected = 'name';
-
         html += `<tr>
             <td class="text-center fw-bold">${i}</td>
             <td><strong>${header}</strong><br><small class="text-muted">${sample}</small></td>
@@ -160,10 +171,23 @@ function renderMapping() {
     $('#mappingBody').html(html);
 
     // Apply auto-detected values
+    const AUTO_DETECT = [
+        [/phone|mobile|number|tel|hp|wa|whatsapp/, 'phone'],
+        [/^name$|nama|contact.?name|full.?name/, 'name'],
+        [/company|organi[sz]ation|organi[sz]ation/, 'company'],
+        [/e.?mail/, 'email'],
+        [/address/, 'address'],
+        [/linkedin/, 'linkedin'],
+        [/facebook/, 'facebook'],
+        [/website|web.?site/, 'website'],
+        [/source/, 'source'],
+        [/status/, 'status'],
+        [/remarks|notes/, 'remarks'],
+    ];
     uploadedHeaders.forEach((header, i) => {
         const headerLower = String(header).toLowerCase();
-        if (/phone|mobile|number|tel|hp|wa|whatsapp/.test(headerLower)) $(`.col-role[data-col=${i}]`).val('phone');
-        else if (/name|nama|contact/.test(headerLower)) $(`.col-role[data-col=${i}]`).val('name');
+        const match = AUTO_DETECT.find(([re]) => re.test(headerLower));
+        if (match) $(`.col-role[data-col=${i}]`).val(match[1]);
     });
 }
 
@@ -186,21 +210,19 @@ $('#backBtn').on('click', function () {
 });
 
 $('#importBtn').on('click', function () {
-    let phoneCol = null, nameCol = null;
+    const mapped = {};
     $('.col-role').each(function () {
         const role = $(this).val();
         const col = parseInt($(this).data('col'));
-        if (role === 'phone') phoneCol = col;
-        if (role === 'name') nameCol = col;
+        if (role !== 'skip' && ROLE_COL_PARAM[role]) mapped[role] = col;
     });
 
-    if (phoneCol === null) { toastr.error('{{ __("Please assign the Phone Number column") }}'); return; }
+    if (mapped.phone === undefined) { toastr.error('{{ __("Please assign the Phone Number column") }}'); return; }
 
     const file = $('#importFile')[0].files[0];
     const fd = new FormData();
     fd.append('file', file);
-    fd.append('phone_col', phoneCol);
-    if (nameCol !== null) fd.append('name_col', nameCol);
+    Object.entries(mapped).forEach(([role, col]) => fd.append(ROLE_COL_PARAM[role], col));
     if ($('#phonebookSelect').val() === 'new') {
         fd.append('new_phonebook_name', $('#newPhonebookName').val());
     } else {
@@ -218,7 +240,7 @@ $('#importBtn').on('click', function () {
         contentType: false,
         success: (res) => {
             toastr.success(res.message);
-            setTimeout(() => window.location = '{{ route("phonebook") }}', 1500);
+            setTimeout(() => window.location = '{{ route("contacts.directory") }}', 1500);
         },
         error: (err) => {
             toastr.error(err.responseJSON?.message ?? '{{ __("Import failed") }}');

@@ -26,7 +26,8 @@ class ContactsExport implements FromCollection
     }
     public function collection()
     {
-        return Contact::whereUserId($this->user)->whereTagId($this->tag)->get(['name','number']);
-        
+        return Contact::whereUserId($this->user)
+            ->whereHas('tags', fn ($q) => $q->where('tags.id', $this->tag))
+            ->get(['name','number']);
     }
 }

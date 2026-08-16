@@ -58,6 +58,11 @@
     const FIELDS = [
         { value: 'name',            label: '{{ __('Contact Name') }}' },
         { value: 'number',          label: '{{ __('Phone Number') }}' },
+        { value: 'company',         label: '{{ __('Company') }}' },
+        { value: 'email',           label: '{{ __('Email') }}' },
+        { value: 'source',          label: '{{ __('Source') }}' },
+        { value: 'address',         label: '{{ __('Address') }}' },
+        { value: 'status',          label: '{{ __('Status') }}' },
         { value: 'tag_name',        label: '{{ __('Phonebook Name') }}' },
         { value: 'created_at',      label: '{{ __('Date Added') }}' },
         { value: 'delivery_status', label: '{{ __('Message Delivery (Behavioral)') }}' },
@@ -86,6 +91,7 @@
         { value: 'not_delivered', label: '{{ __('Was NOT Delivered') }}' },
         { value: 'not_read',      label: '{{ __('Was NOT Read (but delivered)') }}' },
     ];
+    const STATUS_VALUES = @json(\App\Models\Contact::STATUSES);
 
     let conditionCount = 0;
     const container = document.getElementById('conditions-container');
@@ -129,6 +135,10 @@
             opSelect.classList.add('d-none');
             valWrap.innerHTML = `<select class="form-select form-select-sm cond-value" id="val-${id}">${DELIVERY_VALUES.map(v => `<option value="${v.value}">${v.label}</option>`).join('')}</select>`;
             campWrap.classList.remove('d-none');
+        } else if (field === 'status') {
+            opSelect.classList.remove('d-none');
+            opSelect.innerHTML = STRING_OPS.filter(o => ['equals','not_equals'].includes(o.value)).map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            valWrap.innerHTML = `<select class="form-select form-select-sm cond-value" id="val-${id}">${STATUS_VALUES.map(v => `<option value="${v}">${v}</option>`).join('')}</select>`;
         } else {
             opSelect.classList.remove('d-none');
             opSelect.innerHTML = STRING_OPS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
