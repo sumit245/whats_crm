@@ -178,11 +178,11 @@
                         </div>
                         <div class="row">
                             <h6>{{ __('Features') }}</h6>
-                            @foreach ($plan->data as $key => $label)
+                            @foreach ($features as $key => $label)
 								@if ($key != "messages_limit" && $key != "device_limit")
                                 <div class="col-md-6 mb-2">
 									<input type="checkbox" id="{{ $key }}" name="data[{{ $key }}]" class="form-check-input">
-                                    <label for="{{ $key }}" class="form-check-label">{{ $features[$key] }}</label>
+                                    <label for="{{ $key }}" class="form-check-label">{{ $label }}</label>
                                 </div>
 								@endif
                             @endforeach
