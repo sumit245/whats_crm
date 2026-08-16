@@ -41,26 +41,36 @@
                    </a>
                </li>
                @endif
-               {{-- chat --}}
+               {{-- chat (+ chat settings nested, owner only) --}}
+               @if($isAgentUser)
                <li class="{{ request()->is('chat*') ? 'active' : '' }}">
                    <a href="{{ route('chat.index') }}">
                        <div class="parent-icon"><i class="bi bi-chat-dots-fill"></i></div>
                        <div class="menu-title">{{__('Chat')}}</div>
                    </a>
                </li>
+               @else
+               <li class="{{ request()->is('chat*') ? 'active' : '' }}">
+                   <a href="javascript:;" class="has-arrow">
+                       <div class="parent-icon"><i class="bi bi-chat-dots-fill"></i></div>
+                       <div class="menu-title">{{__('Chat')}}</div>
+                   </a>
+                   <ul>
+                       <li class="{{ request()->is('chat/settings*') ? '' : 'active' }}">
+                           <a href="{{ route('chat.index') }}"><i class="bi bi-circle"></i>{{__('Inbox')}}</a>
+                       </li>
+                       <li class="{{ request()->is('chat/settings*') ? 'active' : '' }}">
+                           <a href="{{ route('chat.settings') }}"><i class="bi bi-circle"></i>{{__('Chat Settings')}}</a>
+                       </li>
+                   </ul>
+               </li>
+               @endif
                @if(!$isAgentUser)
                {{-- chatbot flows --}}
                <li class="{{ request()->is('flows*') ? 'active' : '' }}">
                    <a href="{{ route('flows.index') }}">
                        <div class="parent-icon"><i class="bi bi-diagram-3-fill"></i></div>
                        <div class="menu-title">{{__('Chatbot Flows')}}</div>
-                   </a>
-               </li>
-               {{-- chat settings --}}
-               <li class="{{ request()->is('chat/settings*') ? 'active' : '' }}">
-                   <a href="{{ route('chat.settings') }}">
-                       <div class="parent-icon"><i class="bi bi-gear-fill"></i></div>
-                       <div class="menu-title">{{__('Chat Settings')}}</div>
                    </a>
                </li>
                {{-- agents & teams --}}
