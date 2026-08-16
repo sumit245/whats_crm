@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Log;
 class SocketPushService
 {
     /**
+     * Parsed .env contents for this request only — reset on every new
+     * request/CLI run since it's a plain PHP static, not a putenv() call.
+     */
+    private static ?array $freshEnv = null;
+
+    /**
      * Push a real-time event to all Socket.io clients in a conversation room
      * (room name "conv-{id}"). Fire-and-forget — never throws.
      */
@@ -31,8 +37,8 @@ class SocketPushService
      */
     private static function push(string $room, string $event, array $payload): void
     {
-        $url    = rtrim(env('SOCKET_URL', 'http://127.0.0.1:3100'), '/') . '/push';
-        $secret = env('SOCKET_SECRET', '');
+        $url    = rtrim(self::freshEnv('SOCKET_URL', 'http://127.0.0.1:3100'), '/') . '/push';
+        $secret = self::freshEnv('SOCKET_SECRET', '');
 
         try {
             Http::timeout(2)->post($url, [
@@ -44,5 +50,28 @@ class SocketPushService
         } catch (\Throwable $e) {
             Log::debug("SocketPushService: failed to push event '{$event}' to {$room}: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Read a value straight from the .env file on disk instead of env().
+     *
+     * Laravel's env() loader (Dotenv::createImmutable) sets each variable via
+     * putenv() only once per OS process, and won't overwrite it if already
+     * set. On this host, PHP workers are long-lived and reused across many
+     * requests — so an .env edit is invisible to already-running workers
+     * until they happen to recycle, which can take hours. Parsing the file
+     * directly here sidesteps that cache entirely: every push always reflects
+     * the current .env, with no PHP restart required after a config change.
+     */
+    private static function freshEnv(string $key, string $default = ''): string
+    {
+        if (self::$freshEnv === null) {
+            $path = base_path('.env');
+            self::$freshEnv = is_readable($path)
+                ? \Dotenv\Dotenv::parse(file_get_contents($path))
+                : [];
+        }
+
+        return self::$freshEnv[$key] ?? $default;
     }
 }
