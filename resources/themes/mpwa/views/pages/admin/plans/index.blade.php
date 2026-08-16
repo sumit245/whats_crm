@@ -30,6 +30,8 @@
 			'send_vcard' => __('Send VCard'),
 			'webhook' => __('Webhook'),
 			'api' => __('API'),
+			'integration_custom_app' => __('Custom App Integration'),
+			'integration_website_widget' => __('Website Widget Integration'),
 		];
     @endphp
 
