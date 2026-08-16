@@ -153,3 +153,12 @@ a.btn-info:hover {
 .btn-sm {
     border-radius: var(--dnd-radius) !important;
 }
+
+/* .btn-xs previously only set border-radius, so it fell back to full
+   default .btn padding/font-size — icon-only action buttons (table row
+   actions, etc.) rendered at full size and overflowed narrow columns. */
+.btn-xs {
+    padding: 0.125rem 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
