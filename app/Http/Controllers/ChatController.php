@@ -156,12 +156,12 @@ class ChatController extends Controller
         );
         $contactTags = \App\Models\Contact::where('user_id', $owner->id)
             ->where('number', $conversation->contact_number)
-            ->with('tag')
-            ->get()
-            ->pluck('tag.name')
-            ->filter()
+            ->with('tags')
+            ->first()
+            ?->tags
+            ->pluck('name')
             ->unique()
-            ->values();
+            ->values() ?? collect();
 
         $quickReplies = QuickReply::where('user_id', $owner->id)
             ->orderBy('shortcut')
